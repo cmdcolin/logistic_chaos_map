@@ -8,6 +8,7 @@ const initial = {
   minR: 2,
   maxR: 4,
 };
+
 function App() {
   const [draw, setDraw] = useState();
   const [mouseover, setMouseover] = useState();
@@ -36,21 +37,32 @@ function App() {
       ctx.fillStyle = `rgba(0,0,0,0.4)`;
       const rstep = (maxR - minR) / width;
       const xstep = (maxX - minX) / height;
+
+      var imgdata = ctx.getImageData(0, 0, width, height);
+      const rgba = imgdata.data;
+      const iterations = 100 / ((maxX - minX) * 100);
+      console.log({ iterations });
+      const xspan = maxX - minX;
+      const rspan = maxR - minR;
+
       for (let r = minR; r < maxR; r += rstep) {
         for (let p = minX; p < maxX; p += xstep * 10) {
           let x = p;
           for (let i = 0; i < 1000; i++) {
             x = r * x * (1 - x);
           }
-          for (let i = 0; i < 20; i++) {
-            const y = height * ((x - minX) / (maxX - minX));
-            if (y > 0 && y < height) {
-              ctx.fillRect(width * ((r - minR) / (maxR - minR)), y, 0.7, 0.7);
-            }
+          for (let i = 0; i < 100 + iterations; i++) {
+            const yc = Math.floor(height * ((x - minX) / xspan));
+            const xc = Math.floor(width * ((r - minR) / rspan));
+            const pos = (yc * width + xc) * 4;
+            rgba[pos + 0] = Math.max(0, rgba[pos + 0] - 1);
+            rgba[pos + 1] = Math.max(0, rgba[pos + 1] - 1);
+            rgba[pos + 2] = Math.max(0, rgba[pos + 2] - 1);
             x = r * x * (1 - x);
           }
         }
       }
+      ctx.putImageData(imgdata, 0, 0);
     }
 
     requestIdleCallback(() => {
