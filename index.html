@@ -1,0 +1,25 @@
+<html>
+  <body>
+    <canvas id="canvas" style="width: 100%; height: 100%"> </canvas>
+    <script>
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      const { width, height } = canvas.getBoundingClientRect();
+      canvas.width = width;
+      canvas.height = height;
+      ctx.fillStyle = "rgba(0,0,0,0.3)";
+
+      for (let r = 2; r < 4; r += 0.001) {
+        let x = 0;
+
+        for (let p = 0; p < 1.0; p += 0.05) {
+          let x = p;
+          for (let i = 0; i < 100; i++) {
+            ctx.fillRect(width * ((r - 2) / 2), x * height, 0.5, 0.5);
+            x = r * x * (1 - x);
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
