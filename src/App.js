@@ -1,9 +1,16 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
+
+const initial = {
+  minX: 0,
+  maxX: 1,
+  minR: 2,
+  maxR: 4,
+};
 function App() {
   const [draw, setDraw] = useState();
   const [mouseover, setMouseover] = useState();
-  const [params, setParams] = useState({ minX: 0, maxX: 1, minR: 2, maxR: 4 });
+  const [params, setParams] = useState(initial);
   const [mouseDown, setMouseDown] = useState();
   const [mouseCurr, setMouseCurr] = useState();
   const [loading, setLoading] = useState(true);
@@ -17,21 +24,23 @@ function App() {
     draw.width = width;
     draw.height = height;
     function drawCanvas() {
-      ctx.fillStyle = "rgba(0,0,0,0.5)";
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = "rgba(0,0,0,0.1)";
       const rstep = (maxR - minR) / width;
       const xstep = (maxX - minX) / height;
       for (let r = minR; r < maxR; r += rstep) {
         for (let p = minX; p < maxX; p += xstep * 10) {
           let x = p;
-          for (let i = 0; i < 100; i++) {
+          for (let i = 0; i < 1000; i++) {
             x = r * x * (1 - x);
           }
-          for (let i = 0; i < 10; i++) {
+          for (let i = 0; i < 20; i++) {
             ctx.fillRect(
               width * ((r - minR) / (maxR - minR)),
-              x * height,
-              0.5,
-              0.5
+              height * ((x - minX) / (maxX - minX)),
+              0.7,
+              0.7
             );
             x = r * x * (1 - x);
           }
@@ -80,9 +89,7 @@ function App() {
       <p>
         Current params: r=[{minR},{maxR}] x=[{minX},{maxX}]
       </p>
-      <button onClick={() => setParams({ minR: 2, maxR: 4, minX: 0, maxX: 1 })}>
-        Reset
-      </button>
+      <button onClick={() => setParams(initial)}>Reset</button>
       <div style={{ position: "relative" }}>
         <canvas
           ref={(ref) => setDraw(ref)}
@@ -116,6 +123,10 @@ function App() {
               setMouseCurr([x, y]);
             }
           }}
+          onMouseLeave={(event) => {
+            setMouseDown();
+            setMouseCurr();
+          }}
           onMouseUp={() => {
             const x1 = Math.min(mouseDown[0], mouseCurr[0]);
             const x2 = Math.max(mouseDown[0], mouseCurr[0]);
@@ -128,10 +139,10 @@ function App() {
               minR: ((maxR - minR) * x1) / width + minR,
               maxR: ((maxR - minR) * x2) / width + minR,
               minX: ((maxX - minX) * y1) / height + minX,
-              maxX: ((maxX - minX) * y2) / height + maxX,
+              maxX: ((maxX - minX) * y2) / height + minX,
             });
-            setMouseDown(undefined);
-            setMouseCurr(undefined);
+            setMouseDown();
+            setMouseCurr();
             setLoading(true);
           }}
         />
