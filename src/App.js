@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
+import { NumberParam, useQueryParams, withDefault } from "use-query-params";
 
 const initial = {
   minX: 0,
@@ -10,10 +11,16 @@ const initial = {
 function App() {
   const [draw, setDraw] = useState();
   const [mouseover, setMouseover] = useState();
-  const [params, setParams] = useState(initial);
+  const [params, setParams] = useQueryParams({
+    minX: withDefault(NumberParam, 0),
+    maxX: withDefault(NumberParam, 1),
+    minR: withDefault(NumberParam, 2),
+    maxR: withDefault(NumberParam, 4),
+  });
   const [mouseDown, setMouseDown] = useState();
   const [mouseCurr, setMouseCurr] = useState();
   const [loading, setLoading] = useState(true);
+  const [counter, setCounter] = useState();
 
   useEffect(() => {
     const { minX, maxX, minR, maxR } = params;
@@ -26,7 +33,7 @@ function App() {
     function drawCanvas() {
       ctx.fillStyle = "white";
       ctx.fillRect(0, 0, width, height);
-      ctx.fillStyle = "rgba(0,0,0,0.1)";
+      ctx.fillStyle = `rgba(0,0,0,0.4)`;
       const rstep = (maxR - minR) / width;
       const xstep = (maxX - minX) / height;
       for (let r = minR; r < maxR; r += rstep) {
@@ -36,12 +43,10 @@ function App() {
             x = r * x * (1 - x);
           }
           for (let i = 0; i < 20; i++) {
-            ctx.fillRect(
-              width * ((r - minR) / (maxR - minR)),
-              height * ((x - minX) / (maxX - minX)),
-              0.7,
-              0.7
-            );
+            const y = height * ((x - minX) / (maxX - minX));
+            if (y > 0 && y < height) {
+              ctx.fillRect(width * ((r - minR) / (maxR - minR)), y, 0.7, 0.7);
+            }
             x = r * x * (1 - x);
           }
         }
@@ -80,16 +85,28 @@ function App() {
 
   return (
     <div style={{ margin: 20 }}>
-      <h1>f(x)=rx(x-1)</h1>
+      <h1>
+        <a href="https://github.com/cmdcolin/logistic_chaos_map">
+          f(x)=rx(x-1)
+        </a>
+      </h1>
       <p>
         The function above is iterated for values of r between [2,4] and x
-        between [0,1] and points where it lands after 100 initial warm up
-        iterations are plotted
+        between [0,1] and points where it lands after 1000 initial warm up
+        iterations are plotted. Click and drag a region to zoom in.
       </p>
       <p>
         Current params: r=[{minR},{maxR}] x=[{minX},{maxX}]
       </p>
-      <button onClick={() => setParams(initial)}>Reset</button>
+      <button
+        onClick={() => {
+          setParams(initial);
+          setCounter(counter + 1);
+          setLoading(true);
+        }}
+      >
+        Reset
+      </button>
       <div style={{ position: "relative" }}>
         <canvas
           ref={(ref) => setDraw(ref)}
@@ -123,7 +140,7 @@ function App() {
               setMouseCurr([x, y]);
             }
           }}
-          onMouseLeave={(event) => {
+          onMouseLeave={() => {
             setMouseDown();
             setMouseCurr();
           }}
@@ -141,6 +158,7 @@ function App() {
               minX: ((maxX - minX) * y1) / height + minX,
               maxX: ((maxX - minX) * y2) / height + minX,
             });
+            setCounter(counter + 1);
             setMouseDown();
             setMouseCurr();
             setLoading(true);
