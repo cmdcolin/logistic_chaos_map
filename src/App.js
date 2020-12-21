@@ -8,6 +8,7 @@ const initial = {
   minR: 2,
   maxR: 4,
 };
+
 function App() {
   const [draw, setDraw] = useState();
   const [mouseover, setMouseover] = useState();
@@ -24,9 +25,13 @@ function App() {
 
   useEffect(() => {
     const { minX, maxX, minR, maxR } = params;
-    if (!draw) return;
+    if (!draw) {
+      return;
+    }
     const ctx = draw.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {
+      return;
+    }
     const { width, height } = draw.getBoundingClientRect();
     draw.width = width;
     draw.height = height;
@@ -60,9 +65,13 @@ function App() {
   }, [params, draw]);
 
   useEffect(() => {
-    if (!mouseover) return;
+    if (!mouseover) {
+      return;
+    }
     const ctx = mouseover.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {
+      return;
+    }
     const { width, height } = mouseover.getBoundingClientRect();
     mouseover.width = width;
     mouseover.height = height;
