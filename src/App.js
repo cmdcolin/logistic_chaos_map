@@ -22,6 +22,20 @@ function App() {
   const [mouseCurr, setMouseCurr] = useState();
   const [loading, setLoading] = useState(true);
   const [counter, setCounter] = useState();
+  const [wasm, setWasm] = useState();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const wasm = await import("./logistic_wasm");
+        setWasm(wasm);
+      } catch (err) {
+        console.error(
+          `Unexpected error in loadWasm. [Message: ${err.message}]`
+        );
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     const { minX, maxX, minR, maxR } = params;
