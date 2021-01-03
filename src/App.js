@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import { NumberParam, useQueryParams, withDefault } from "use-query-params";
+import drawCanvas from "./drawCanvas";
 
 const initial = {
   minX: 0,
@@ -22,17 +23,18 @@ function App() {
   const [mouseCurr, setMouseCurr] = useState();
   const [loading, setLoading] = useState(true);
   const [counter, setCounter] = useState();
+  const [useWasm, setUseWasm] = useState(false);
   const [wasm, setWasm] = useState();
+  const [time, setTime] = useState();
 
   useEffect(() => {
     (async () => {
       try {
-        const wasm = await import("./logistic_wasm");
+        setLoading(true);
+        const wasm = await import("logistic_map_wasm");
         setWasm(wasm);
-      } catch (err) {
-        console.error(
-          `Unexpected error in loadWasm. [Message: ${err.message}]`
-        );
+      } finally {
+        setLoading(false);
       }
     })();
   }, []);
@@ -49,34 +51,22 @@ function App() {
     const { width, height } = draw.getBoundingClientRect();
     draw.width = width;
     draw.height = height;
-    function drawCanvas() {
-      ctx.fillStyle = "white";
-      ctx.fillRect(0, 0, width, height);
-      ctx.fillStyle = `rgba(0,0,0,0.4)`;
-      const rstep = (maxR - minR) / width;
-      const xstep = (maxX - minX) / height;
-      for (let r = minR; r < maxR; r += rstep) {
-        for (let p = minX; p < maxX; p += xstep * 10) {
-          let x = p;
-          for (let i = 0; i < 1000; i++) {
-            x = r * x * (1 - x);
-          }
-          for (let i = 0; i < 20; i++) {
-            const y = height * ((x - minX) / (maxX - minX));
-            if (y > 0 && y < height) {
-              ctx.fillRect(width * ((r - minR) / (maxR - minR)), y, 0.7, 0.7);
-            }
-            x = r * x * (1 - x);
-          }
-        }
-      }
-    }
 
+    setLoading(true);
     requestIdleCallback(() => {
-      drawCanvas();
+      if (useWasm) {
+        const now = performance.now();
+        console.log({ wasm });
+        wasm.draw(ctx, width, height, minR, maxR, minX, maxX);
+        setTime(performance.now() - now);
+      } else {
+        const now = performance.now();
+        drawCanvas(ctx, width, height, minR, maxR, minX, maxX);
+        setTime(performance.now() - now);
+      }
       setLoading(false);
     });
-  }, [params, draw]);
+  }, [params, draw, wasm, useWasm]);
 
   useEffect(() => {
     if (!mouseover) {
@@ -118,6 +108,14 @@ function App() {
         between [0,1] and points where it lands after 1000 initial warm up
         iterations are plotted. Click and drag a region to zoom in.
       </p>
+      {time ? <p>Time taken: {time}ms</p> : null}
+      <label htmlFor="wasm">Draw with WASM</label>
+      <input
+        id="wasm"
+        type="checkbox"
+        checked={useWasm}
+        onChange={(event) => setUseWasm(event.target.checked)}
+      />
       <p>
         Current params: r=[{minR},{maxR}] x=[{minX},{maxX}]
       </p>
