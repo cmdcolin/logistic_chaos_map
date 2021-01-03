@@ -54,6 +54,8 @@ function App() {
 
     setLoading(true);
     requestIdleCallback(() => {
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, width, height);
       ctx.fillStyle = "rgba(0,0,0,0.4)";
       if (useWasm) {
         const now = performance.now();
