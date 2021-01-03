@@ -3,6 +3,10 @@ import { useEffect, useState } from "react";
 import { NumberParam, useQueryParams, withDefault } from "use-query-params";
 import drawCanvas from "./drawCanvas";
 
+function timeout(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 const initial = {
   minX: 0,
   maxX: 1,
@@ -25,49 +29,58 @@ function App() {
   const [counter, setCounter] = useState();
   const [useWasm, setUseWasm] = useState(false);
   const [wasm, setWasm] = useState();
-  const [time, setTime] = useState();
+  const [proportion, setProportion] = useState(0);
 
   useEffect(() => {
     (async () => {
       try {
-        setLoading(true);
         const wasm = await import("logistic_map_wasm");
         setWasm(wasm);
-      } finally {
-        setLoading(false);
+      } catch (e) {
+        console.error(e);
       }
     })();
   }, []);
 
   useEffect(() => {
-    const { minX, maxX, minR, maxR } = params;
-    if (!draw) {
-      return;
-    }
-    const ctx = draw.getContext("2d");
-    if (!ctx) {
-      return;
-    }
-    const { width, height } = draw.getBoundingClientRect();
-    draw.width = width;
-    draw.height = height;
+    (async () => {
+      if (wasm) {
+        const { minX, maxX, minR, maxR } = params;
+        if (!draw) {
+          return;
+        }
+        const ctx = draw.getContext("2d");
+        if (!ctx) {
+          return;
+        }
+        const { width, height } = draw.getBoundingClientRect();
+        draw.width = width;
+        draw.height = height;
 
-    setLoading(true);
-    requestIdleCallback(() => {
-      ctx.fillStyle = "white";
-      ctx.fillRect(0, 0, width, height);
-      ctx.fillStyle = "rgba(0,0,0,0.4)";
-      if (useWasm) {
-        const now = performance.now();
-        wasm.draw(ctx, width, height, minR, maxR, minX, maxX);
-        setTime(performance.now() - now);
-      } else {
-        const now = performance.now();
-        drawCanvas(ctx, width, height, minR, maxR, minX, maxX);
-        setTime(performance.now() - now);
+        setLoading(true);
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = "rgba(0,0,0,0.4)";
+        if (useWasm) {
+          wasm.draw(ctx, width, height, minR, maxR, minX, maxX);
+        } else {
+          for (const iter of drawCanvas(
+            ctx,
+            width,
+            height,
+            minR,
+            maxR,
+            minX,
+            maxX
+          )) {
+            setProportion(iter / width);
+            await timeout(1);
+          }
+        }
+        setLoading(false);
+        setProportion(0);
       }
-      setLoading(false);
-    });
+    })();
   }, [params, draw, wasm, useWasm]);
 
   useEffect(() => {
@@ -81,13 +94,6 @@ function App() {
     const { width, height } = mouseover.getBoundingClientRect();
     mouseover.width = width;
     mouseover.height = height;
-    if (loading) {
-      ctx.clearRect(0, 0, width, height);
-      ctx.font = "100px Verdana";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("Loading...", width / 2, height / 2);
-    }
     if (mouseDown) {
       ctx.clearRect(0, 0, width, height);
       const [x1, y1] = mouseDown;
@@ -95,7 +101,7 @@ function App() {
       ctx.fillStyle = "rgba(255,0,0,0.3)";
       ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
     }
-  }, [mouseDown, mouseCurr, mouseover, loading]);
+  }, [mouseDown, mouseCurr, mouseover]);
   const { minR, maxR, minX, maxX } = params;
 
   return (
@@ -119,8 +125,8 @@ function App() {
       />
       <p>
         Current params: r=[{minR},{maxR}] x=[{minX},{maxX}]
-        {time ? ` Time taken: ${time}ms` : null}
       </p>
+      <p>{loading ? `Loading...${proportion.toPrecision(3)}` : null}</p>
       <button
         onClick={() => {
           setParams(initial);
@@ -149,7 +155,7 @@ function App() {
             top: 0,
             width: "100%",
             height: "100vh",
-            zIndex: 100,
+            zIndex: 1000,
           }}
           ref={(ref) => setMouseover(ref)}
           onMouseDown={(event) => {
