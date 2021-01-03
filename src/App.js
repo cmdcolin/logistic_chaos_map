@@ -43,6 +43,7 @@ function App() {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       if (wasm) {
         const { minX, maxX, minR, maxR } = params;
@@ -54,8 +55,9 @@ function App() {
           return;
         }
         const { width, height } = draw.getBoundingClientRect();
-        draw.width = width;
-        draw.height = height;
+        draw.width = width * 2;
+        draw.height = height * 2;
+        ctx.scale(2, 2);
 
         setLoading(true);
         ctx.fillStyle = "white";
@@ -75,12 +77,16 @@ function App() {
           )) {
             setProportion(iter / width);
             await timeout(1);
+            if (cancelled) break;
           }
         }
         setLoading(false);
         setProportion(0);
       }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, [params, draw, wasm, useWasm]);
 
   useEffect(() => {
