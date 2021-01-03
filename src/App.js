@@ -1,6 +1,13 @@
 /* eslint-disable no-unused-vars */
-import { useEffect, useState } from "react";
-import { NumberParam, useQueryParams, withDefault } from "use-query-params";
+import "./App.css";
+import { useCallback, useEffect, useState } from "react";
+import {
+  BooleanParam,
+  NumberParam,
+  StringParam,
+  useQueryParams,
+  withDefault,
+} from "use-query-params";
 import drawCanvas from "./drawCanvas";
 import saveAs from "file-saver";
 
@@ -8,12 +15,13 @@ function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const initial = {
-  minX: 0,
-  maxX: 1,
-  minR: 2,
-  maxR: 4,
-};
+export function useForceUpdate() {
+  const [, setTick] = useState(0);
+  const update = useCallback(() => {
+    setTick((tick) => tick + 1);
+  }, []);
+  return update;
+}
 
 function App() {
   const [draw, setDraw] = useState();
@@ -23,14 +31,17 @@ function App() {
     maxX: withDefault(NumberParam, 1),
     minR: withDefault(NumberParam, 2),
     maxR: withDefault(NumberParam, 4),
+    opacity: withDefault(StringParam, "0.1"),
+    resolution: withDefault(StringParam, "500"),
+    animate: withDefault(BooleanParam, true),
+    drawWithWasm: withDefault(BooleanParam, false),
   });
   const [mouseDown, setMouseDown] = useState();
   const [mouseCurr, setMouseCurr] = useState();
   const [loading, setLoading] = useState(true);
-  const [counter, setCounter] = useState();
-  const [useWasm, setUseWasm] = useState(false);
   const [wasm, setWasm] = useState();
   const [proportion, setProportion] = useState(0);
+  const forceUpdate = useForceUpdate();
 
   useEffect(() => {
     (async () => {
@@ -42,12 +53,20 @@ function App() {
       }
     })();
   }, []);
-
+  const {
+    drawWithWasm,
+    minX,
+    maxX,
+    minR,
+    maxR,
+    opacity,
+    resolution,
+    animate,
+  } = params;
   useEffect(() => {
     let cancelled = false;
     (async () => {
       if (wasm) {
-        const { minX, maxX, minR, maxR } = params;
         if (!draw) {
           return;
         }
@@ -61,34 +80,57 @@ function App() {
         ctx.scale(2, 2);
 
         setLoading(true);
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, width, height);
-        ctx.fillStyle = "rgba(0,0,0,0.4)";
-        if (useWasm) {
-          wasm.draw(ctx, width, height, minR, maxR, minX, maxX);
-        } else {
-          for (const iter of drawCanvas(
-            ctx,
-            width,
-            height,
-            minR,
-            maxR,
-            minX,
-            maxX
-          )) {
-            setProportion(iter / width);
-            await timeout(1);
-            if (cancelled) break;
-          }
-        }
-        setLoading(false);
         setProportion(0);
+        setTimeout(async () => {
+          ctx.fillStyle = "white";
+          ctx.fillRect(0, 0, width, height);
+          ctx.fillStyle = `rgba(0,0,0,${+opacity})`;
+          if (drawWithWasm) {
+            wasm.draw(ctx, width, height, minR, maxR, minX, maxX, +resolution);
+          } else {
+            for (const iter of drawCanvas(
+              ctx,
+              width,
+              height,
+              minR,
+              maxR,
+              minX,
+              maxX,
+              +resolution
+            )) {
+              if (animate) {
+                setProportion(iter / width);
+                await timeout(1);
+              }
+              if (cancelled) {
+                break;
+              }
+            }
+          }
+
+          //if !cancelled seems to be a race condition?
+          if (!cancelled) {
+            setLoading(false);
+            setProportion(0);
+          }
+        }, 100);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [params, draw, wasm, useWasm]);
+  }, [
+    minR,
+    maxR,
+    minX,
+    maxX,
+    animate,
+    drawWithWasm,
+    opacity,
+    resolution,
+    draw,
+    wasm,
+  ]);
 
   useEffect(() => {
     if (!mouseover) {
@@ -109,7 +151,6 @@ function App() {
       ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
     }
   }, [mouseDown, mouseCurr, mouseover]);
-  const { minR, maxR, minX, maxX } = params;
 
   return (
     <div style={{ margin: 20 }}>
@@ -120,38 +161,84 @@ function App() {
       </h1>
       <p>
         The function above is iterated for values of r between [2,4] and x
-        between [0,1] and points where it lands after 1000 initial warm up
-        iterations are plotted. Click and drag a region to zoom in.
+        between [0,1] and points. Click and drag a region to zoom in.
       </p>
-      <label htmlFor="wasm">Draw with WASM</label>
-      <input
-        id="wasm"
-        type="checkbox"
-        checked={useWasm}
-        onChange={(event) => setUseWasm(event.target.checked)}
-      />
-      <button
-        onClick={() => {
-          draw.toBlob(function (blob) {
-            saveAs(blob, `logistic_map_${+Date.now()}.png`);
-          });
-        }}
-      >
-        Save
-      </button>
-      <p>
-        Current params: r=[{minR},{maxR}] x=[{minX},{maxX}]
-      </p>
-      <p>{loading ? `Loading...${proportion.toPrecision(3)}` : null}</p>
-      <button
-        onClick={() => {
-          setParams(initial);
-          setCounter(counter + 1);
-          setLoading(true);
-        }}
-      >
-        Reset
-      </button>
+      <div className="controls">
+        <div className="block">
+          <label htmlFor="opacity">Opacity</label>
+          <input
+            id="opacity"
+            type="text"
+            value={opacity}
+            onChange={(event) => {
+              setParams({ ...params, opacity: event.target.value });
+              forceUpdate();
+            }}
+          />
+        </div>
+        <div className="block">
+          <label htmlFor="resolution">Points to draw at each X</label>
+          <input
+            id="resolution"
+            type="text"
+            value={resolution}
+            onChange={(event) => {
+              setParams({ ...params, resolution: event.target.value });
+              forceUpdate();
+            }}
+          />
+        </div>
+        <div className="block">
+          <label htmlFor="wasm">Draw with WASM</label>
+          <input
+            id="wasm"
+            type="checkbox"
+            checked={drawWithWasm}
+            onChange={(event) => {
+              setParams({ ...params, drawWithWasm: event.target.checked });
+              forceUpdate();
+            }}
+          />
+        </div>
+        {!drawWithWasm ? (
+          <div className="block">
+            <label htmlFor="animate">Animate?</label>
+            <input
+              id="animate"
+              disabled={drawWithWasm}
+              type="checkbox"
+              checked={params.animate}
+              onChange={(event) => {
+                setParams({ ...params, animate: event.target.checked });
+                forceUpdate();
+              }}
+            />
+          </div>
+        ) : null}
+        <p>
+          {loading
+            ? `Loading...${proportion ? proportion.toPrecision(3) : ""}`
+            : null}
+        </p>
+        <button
+          onClick={() => {
+            draw.toBlob(function (blob) {
+              saveAs(blob, `logistic_map_${+Date.now()}.png`);
+            });
+          }}
+        >
+          Save as PNG
+        </button>
+
+        <button
+          onClick={() => {
+            setParams({ ...params, minX: 0, maxX: 1, minR: 2, maxR: 4 });
+            forceUpdate();
+          }}
+        >
+          Reset
+        </button>
+      </div>
       <div style={{ position: "relative" }}>
         <canvas
           ref={(ref) => setDraw(ref)}
@@ -194,16 +281,16 @@ function App() {
             const x2 = Math.max(mouseDown[0], mouseCurr[0]);
             const y1 = Math.min(mouseDown[1], mouseCurr[1]);
             const y2 = Math.max(mouseDown[1], mouseCurr[1]);
-            const { maxR, minR, maxX, minX } = params;
             const { width, height } = mouseover.getBoundingClientRect();
 
             setParams({
+              ...params,
               minR: ((maxR - minR) * x1) / width + minR,
               maxR: ((maxR - minR) * x2) / width + minR,
               minX: ((maxX - minX) * y1) / height + minX,
               maxX: ((maxX - minX) * y2) / height + minX,
             });
-            setCounter(counter + 1);
+            forceUpdate();
             setMouseDown();
             setMouseCurr();
             setLoading(true);
