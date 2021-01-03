@@ -35,6 +35,7 @@ function App() {
     resolution: withDefault(StringParam, "500"),
     animate: withDefault(BooleanParam, true),
     drawWithWasm: withDefault(BooleanParam, false),
+    vertical: withDefault(BooleanParam, false),
   });
   const [mouseDown, setMouseDown] = useState();
   const [mouseCurr, setMouseCurr] = useState();
@@ -62,11 +63,12 @@ function App() {
     opacity,
     resolution,
     animate,
+    vertical,
   } = params;
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      if (wasm) {
+      if (wasm && !Number.isNaN(+opacity) && !Number.isNaN(+resolution)) {
         if (!draw) {
           return;
         }
@@ -86,7 +88,17 @@ function App() {
           ctx.fillRect(0, 0, width, height);
           ctx.fillStyle = `rgba(0,0,0,${+opacity})`;
           if (drawWithWasm) {
-            wasm.draw(ctx, width, height, minR, maxR, minX, maxX, +resolution);
+            wasm.draw(
+              ctx,
+              width,
+              height,
+              minR,
+              maxR,
+              minX,
+              maxX,
+              +resolution,
+              vertical
+            );
           } else {
             for (const iter of drawCanvas(
               ctx,
@@ -96,7 +108,8 @@ function App() {
               maxR,
               minX,
               maxX,
-              +resolution
+              +resolution,
+              vertical
             )) {
               if (animate) {
                 setProportion(iter / width);
@@ -124,6 +137,7 @@ function App() {
     maxR,
     minX,
     maxX,
+    vertical,
     animate,
     drawWithWasm,
     opacity,
@@ -188,6 +202,7 @@ function App() {
             }}
           />
         </div>
+
         <div className="block">
           <label htmlFor="wasm">Draw with WASM</label>
           <input
@@ -200,6 +215,20 @@ function App() {
             }}
           />
         </div>
+        {!drawWithWasm ? (
+          <div className="block">
+            <label htmlFor="vertical">Vertical</label>
+            <input
+              id="vertical"
+              type="checkbox"
+              checked={vertical}
+              onChange={(event) => {
+                setParams({ ...params, vertical: event.target.checked });
+                forceUpdate();
+              }}
+            />
+          </div>
+        ) : null}
         {!drawWithWasm ? (
           <div className="block">
             <label htmlFor="animate">Animate?</label>
@@ -217,7 +246,7 @@ function App() {
         ) : null}
         <p>
           {loading
-            ? `Loading...${proportion ? proportion.toPrecision(3) : ""}`
+            ? `Loading...${proportion ? (proportion * 100).toPrecision(3) : ""}`
             : null}
         </p>
         <button
@@ -232,7 +261,13 @@ function App() {
 
         <button
           onClick={() => {
-            setParams({ ...params, minX: 0, maxX: 1, minR: 2, maxR: 4 });
+            setParams({
+              ...params,
+              minX: 0,
+              maxX: 1,
+              minR: 2,
+              maxR: 4,
+            });
             forceUpdate();
           }}
         >
@@ -283,8 +318,22 @@ function App() {
             const y2 = Math.max(mouseDown[1], mouseCurr[1]);
             const { width, height } = mouseover.getBoundingClientRect();
 
+            const newParams = vertical
+              ? {
+                  minR: ((maxR - minR) * x1) / width + minR,
+                  maxR: ((maxR - minR) * x2) / width + minR,
+                  minX: ((maxX - minX) * y1) / height + minX,
+                  maxX: ((maxX - minX) * y2) / height + minX,
+                }
+              : {
+                  minR: ((maxR - minR) * y1) / height + minR,
+                  maxR: ((maxR - minR) * y2) / height + minR,
+                  minX: ((maxX - minX) * x1) / width + minX,
+                  maxX: ((maxX - minX) * x2) / width + minX,
+                };
             setParams({
               ...params,
+
               minR: ((maxR - minR) * x1) / width + minR,
               maxR: ((maxR - minR) * x2) / width + minR,
               minX: ((maxX - minX) * y1) / height + minX,
