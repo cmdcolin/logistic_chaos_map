@@ -14,7 +14,11 @@ export default function* drawCanvas(
   for (let x = 0; x < width; x++) {
     yield x + 1;
     const r = x * rstep + minR;
-    for (let pointsDrawn = 0; pointsDrawn < resolution; ) {
+    for (
+      let pointsDrawn = 0, tries = 0;
+      pointsDrawn < resolution && tries < 100;
+      tries++
+    ) {
       let p = Math.random();
       for (let i = 0; i < Math.max(warmup, 10000); i++) {
         p = r * p * (1 - p);

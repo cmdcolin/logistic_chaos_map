@@ -38,6 +38,7 @@ function App() {
     vertical: withDefault(BooleanParam, false),
   });
   const [mouseDown, setMouseDown] = useState();
+  const [mouseDownTime, setMouseDownTime] = useState();
   const [mouseCurr, setMouseCurr] = useState();
   const [loading, setLoading] = useState(true);
   const [wasm, setWasm] = useState();
@@ -175,7 +176,11 @@ function App() {
       </h1>
       <p>
         The function above is iterated for values of r between [2,4] and x
-        between [0,1] and points. Click and drag a region to zoom in.
+        between [0,1] and points. Click and drag a region to zoom in. The
+        program iterates until it draws N points in the zoomed in region, which
+        results in higher computation time at zoomed in values. When zoomed in,
+        it has to iterate the logistic map longer to find that many points to
+        draw resulting in it being slower when zoomed in.
       </p>
       <div className="controls">
         <div className="block">
@@ -191,7 +196,7 @@ function App() {
           />
         </div>
         <div className="block">
-          <label htmlFor="resolution">Points to draw at each X</label>
+          <label htmlFor="resolution">N</label>
           <input
             id="resolution"
             type="text"
@@ -215,20 +220,18 @@ function App() {
             }}
           />
         </div>
-        {!drawWithWasm ? (
-          <div className="block">
-            <label htmlFor="vertical">Vertical</label>
-            <input
-              id="vertical"
-              type="checkbox"
-              checked={vertical}
-              onChange={(event) => {
-                setParams({ ...params, vertical: event.target.checked });
-                forceUpdate();
-              }}
-            />
-          </div>
-        ) : null}
+        <div className="block">
+          <label htmlFor="vertical">Vertical</label>
+          <input
+            id="vertical"
+            type="checkbox"
+            checked={vertical}
+            onChange={(event) => {
+              setParams({ ...params, vertical: event.target.checked });
+              forceUpdate();
+            }}
+          />
+        </div>
         {!drawWithWasm ? (
           <div className="block">
             <label htmlFor="animate">Animate?</label>
@@ -310,39 +313,45 @@ function App() {
           onMouseLeave={() => {
             setMouseDown();
             setMouseCurr();
+            setMouseDownTime(+Date.now());
           }}
           onMouseUp={() => {
-            const x1 = Math.min(mouseDown[0], mouseCurr[0]);
-            const x2 = Math.max(mouseDown[0], mouseCurr[0]);
-            const y1 = Math.min(mouseDown[1], mouseCurr[1]);
-            const y2 = Math.max(mouseDown[1], mouseCurr[1]);
-            const { width, height } = mouseover.getBoundingClientRect();
+            if (+Date.now() - mouseDownTime > 100) {
+              const x1 = Math.min(mouseDown[0], mouseCurr[0]);
+              const x2 = Math.max(mouseDown[0], mouseCurr[0]);
+              const y1 = Math.min(mouseDown[1], mouseCurr[1]);
+              const y2 = Math.max(mouseDown[1], mouseCurr[1]);
+              const { width, height } = mouseover.getBoundingClientRect();
 
-            const newParams = vertical
-              ? {
-                  minR: ((maxR - minR) * x1) / width + minR,
-                  maxR: ((maxR - minR) * x2) / width + minR,
-                  minX: ((maxX - minX) * y1) / height + minX,
-                  maxX: ((maxX - minX) * y2) / height + minX,
-                }
-              : {
-                  minR: ((maxR - minR) * y1) / height + minR,
-                  maxR: ((maxR - minR) * y2) / height + minR,
-                  minX: ((maxX - minX) * x1) / width + minX,
-                  maxX: ((maxX - minX) * x2) / width + minX,
-                };
-            setParams({
-              ...params,
+              const newParams = vertical
+                ? {
+                    minR: ((maxR - minR) * x1) / width + minR,
+                    maxR: ((maxR - minR) * x2) / width + minR,
+                    minX: ((maxX - minX) * y1) / height + minX,
+                    maxX: ((maxX - minX) * y2) / height + minX,
+                  }
+                : {
+                    minR: ((maxR - minR) * y1) / height + minR,
+                    maxR: ((maxR - minR) * y2) / height + minR,
+                    minX: ((maxX - minX) * x1) / width + minX,
+                    maxX: ((maxX - minX) * x2) / width + minX,
+                  };
+              setParams({
+                ...params,
 
-              minR: ((maxR - minR) * x1) / width + minR,
-              maxR: ((maxR - minR) * x2) / width + minR,
-              minX: ((maxX - minX) * y1) / height + minX,
-              maxX: ((maxX - minX) * y2) / height + minX,
-            });
-            forceUpdate();
-            setMouseDown();
-            setMouseCurr();
-            setLoading(true);
+                minR: ((maxR - minR) * x1) / width + minR,
+                maxR: ((maxR - minR) * x2) / width + minR,
+                minX: ((maxX - minX) * y1) / height + minX,
+                maxX: ((maxX - minX) * y2) / height + minX,
+              });
+              forceUpdate();
+              setMouseDown();
+              setMouseCurr();
+            } else {
+              setMouseDownTime();
+              setMouseDown();
+              setMouseCurr();
+            }
           }}
         />
       </div>
