@@ -54,9 +54,9 @@ function App() {
 
     setLoading(true);
     requestIdleCallback(() => {
+      ctx.fillStyle = "rgba(0,0,0,0.4)";
       if (useWasm) {
         const now = performance.now();
-        console.log({ wasm });
         wasm.draw(ctx, width, height, minR, maxR, minX, maxX);
         setTime(performance.now() - now);
       } else {
@@ -108,7 +108,6 @@ function App() {
         between [0,1] and points where it lands after 1000 initial warm up
         iterations are plotted. Click and drag a region to zoom in.
       </p>
-      {time ? <p>Time taken: {time}ms</p> : null}
       <label htmlFor="wasm">Draw with WASM</label>
       <input
         id="wasm"
@@ -118,6 +117,7 @@ function App() {
       />
       <p>
         Current params: r=[{minR},{maxR}] x=[{minX},{maxX}]
+        {time ? ` Time taken: ${time}ms` : null}
       </p>
       <button
         onClick={() => {

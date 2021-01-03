@@ -13,18 +13,19 @@ pub fn draw(
   max_x: f64,
 ) {
   let h = height as f64;
-  let rstep = (max_r - min_r) as f64 / width as f64;
+  let w = width as f64;
+  let rstep = (max_r - min_r) / w;
   for x in 0..width {
-    let xf = x as f64;
-    let r = xf * rstep + min_r;
+    let r = (x as f64) * rstep + min_r;
     let mut p = Math::random();
     for _ in 0..1000 {
       p = r * p * (1. - p);
     }
     for _ in 1..200 {
-      let rho = h * ((p - min_x) / (max_x - min_x));
-      if rho > 0.0 && rho < h {
-        ctx.fill_rect(x as f64, rho, 1., 1.)
+      let y = h * ((p - min_x) / (max_x - min_x));
+      let xp = w * ((r - min_r) / (max_r - min_r));
+      if y > 0.0 && y < h {
+        ctx.fill_rect(xp, y, 0.7, 0.7)
       }
       p = r * p * (1. - p);
     }
