@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { NumberParam, useQueryParams, withDefault } from "use-query-params";
 import drawCanvas from "./drawCanvas";
+import saveAs from "file-saver";
 
 function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -129,6 +130,15 @@ function App() {
         checked={useWasm}
         onChange={(event) => setUseWasm(event.target.checked)}
       />
+      <button
+        onClick={() => {
+          draw.toBlob(function (blob) {
+            saveAs(blob, `logistic_map_${+Date.now()}.png`);
+          });
+        }}
+      >
+        Save
+      </button>
       <p>
         Current params: r=[{minR},{maxR}] x=[{minX},{maxX}]
       </p>
