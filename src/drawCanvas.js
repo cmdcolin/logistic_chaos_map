@@ -11,9 +11,9 @@ export default function* drawCanvas(
 ) {
   const rstep = (maxR - minR) / width;
   const warmup = Math.pow(1.5, Math.log(1 / (maxR - minR))) * 1000;
-  for (let x = 0; x < width; x++) {
-    yield x + 1;
-    const r = x * rstep + minR;
+  for (let curr = 0; curr < width; curr++) {
+    yield curr + 1;
+    const r = curr * rstep + minR;
     for (
       let pointsDrawn = 0, tries = 0;
       pointsDrawn < resolution && tries < 100;
@@ -26,10 +26,10 @@ export default function* drawCanvas(
 
       if (vertical) {
         for (let i = 0; i < 500; i++) {
-          const y = width * ((p - minX) / (maxX - minX));
-          const xp = height * ((r - minR) / (maxR - minR));
-          if (y > 0 && y < width) {
-            ctx.fillRect(y, xp, 0.7, 0.7);
+          const x = width * ((p - minX) / (maxX - minX));
+          const y = height * ((r - minR) / (maxR - minR));
+          if (x > 0 && x < width) {
+            ctx.fillRect(x, y, 0.7, 0.7);
             pointsDrawn++;
           }
           p = r * p * (1 - p);
@@ -37,9 +37,9 @@ export default function* drawCanvas(
       } else {
         for (let i = 0; i < 500; i++) {
           const y = height * ((p - minX) / (maxX - minX));
-          const xp = width * ((r - minR) / (maxR - minR));
+          const x = width * ((r - minR) / (maxR - minR));
           if (y > 0 && y < height) {
-            ctx.fillRect(xp, y, 0.7, 0.7);
+            ctx.fillRect(x, y, 0.7, 0.7);
             pointsDrawn++;
           }
           p = r * p * (1 - p);
