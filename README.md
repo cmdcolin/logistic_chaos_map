@@ -84,5 +84,5 @@ Also there was a recommendation to use
 This did not work for me.
 
 The key for me was making the wasm pkg folder a proper dependency in
-package.json. But, as we know, we all go through some special webpack config
-hellscapes sometimes so your mileage may vary
+package.json AND importing that same name that you put in the package.json in
+the import statement in your js code.
