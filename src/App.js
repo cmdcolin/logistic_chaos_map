@@ -323,7 +323,7 @@ function App() {
               const y2 = Math.max(mouseDown[1], mouseCurr[1]);
               const { width, height } = mouseover.getBoundingClientRect();
 
-              const newParams = vertical
+              const newParams = !vertical
                 ? {
                     minR: ((maxR - minR) * x1) / width + minR,
                     maxR: ((maxR - minR) * x2) / width + minR,
@@ -338,11 +338,7 @@ function App() {
                   };
               setParams({
                 ...params,
-
-                minR: ((maxR - minR) * x1) / width + minR,
-                maxR: ((maxR - minR) * x2) / width + minR,
-                minX: ((maxX - minX) * y1) / height + minX,
-                maxX: ((maxX - minX) * y2) / height + minX,
+                ...newParams,
               });
               forceUpdate();
               setMouseDown();
