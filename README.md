@@ -30,10 +30,13 @@ Ideally there would be a smoother workflow but we'll get there soon
 
 ## Notes
 
-The wasm implementation was added early 2020. I googled a million times "wasm
-create-react-app" and stumbled through tons of stackoverflow threads, and then
-found various posts with their published source code referring to their demo
-wasm package on NPM ([ex1](https://www.npmjs.com/package/@prichey/hello-wasm)
+The wasm/rust implementation isn't really any faster but it was a fun project.
+It was hard to integrate with create-react-app
+
+I googled a million times "wasm create-react-app" and stumbled through tons of
+stackoverflow threads, and then found various posts with their published source
+code referring to their demo wasm package on NPM
+([ex1](https://www.npmjs.com/package/@prichey/hello-wasm)
 [ex2](https://www.npmjs.com/package/wasm-koala-blog) those are from popular
 wasm-in-create-react-app articles) and I was like, why can I not get a
 development local build of this to work without publishing my package?

@@ -31,11 +31,12 @@ function App() {
     maxX: withDefault(NumberParam, 1),
     minR: withDefault(NumberParam, 2),
     maxR: withDefault(NumberParam, 4),
-    opacity: withDefault(StringParam, "0.1"),
-    resolution: withDefault(StringParam, "500"),
+    opacity: withDefault(StringParam, "0.3"),
+    resolution: withDefault(StringParam, "1000"),
     animate: withDefault(BooleanParam, true),
     drawWithWasm: withDefault(BooleanParam, false),
     vertical: withDefault(BooleanParam, false),
+    scaleFactor: withDefault(StringParam, "2"),
   });
   const [mouseDown, setMouseDown] = useState();
   const [mouseDownTime, setMouseDownTime] = useState();
@@ -65,11 +66,18 @@ function App() {
     resolution,
     animate,
     vertical,
+    scaleFactor,
   } = params;
+  const factor = +scaleFactor;
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      if (wasm && !Number.isNaN(+opacity) && !Number.isNaN(+resolution)) {
+      if (
+        wasm &&
+        !Number.isNaN(factor) &&
+        !Number.isNaN(+opacity) &&
+        !Number.isNaN(+resolution)
+      ) {
         if (!draw) {
           return;
         }
@@ -78,21 +86,20 @@ function App() {
           return;
         }
         const { width, height } = draw.getBoundingClientRect();
-        draw.width = width * 2;
-        draw.height = height * 2;
-        ctx.scale(2, 2);
+        draw.width = width * factor;
+        draw.height = height * factor;
 
         setLoading(true);
         setProportion(0);
         setTimeout(async () => {
           ctx.fillStyle = "white";
-          ctx.fillRect(0, 0, width, height);
+          ctx.fillRect(0, 0, width * factor, height * factor);
           ctx.fillStyle = `rgba(0,0,0,${+opacity})`;
           if (drawWithWasm) {
             wasm.draw(
               ctx,
-              width,
-              height,
+              width * factor,
+              height * factor,
               minR,
               maxR,
               minX,
@@ -103,8 +110,8 @@ function App() {
           } else {
             for (const iter of drawCanvas(
               ctx,
-              width,
-              height,
+              width * factor,
+              height * factor,
               minR,
               maxR,
               minX,
@@ -113,7 +120,7 @@ function App() {
               vertical
             )) {
               if (animate) {
-                setProportion(iter / width);
+                setProportion(iter / (width * factor));
                 await timeout(1);
               }
               if (cancelled) {
@@ -138,6 +145,7 @@ function App() {
     maxR,
     minX,
     maxX,
+    factor,
     vertical,
     animate,
     drawWithWasm,
@@ -180,7 +188,9 @@ function App() {
         program iterates until it draws N points in the zoomed in region, which
         results in higher computation time at zoomed in values. When zoomed in,
         it has to iterate the logistic map longer to find that many points to
-        draw resulting in it being slower when zoomed in.
+        draw resulting in it being slower when zoomed in. The scale factor makes
+        the canvas size larger, allowing the code to render higher resolution
+        (larger) images.
       </p>
       <div className="controls">
         <div className="block">
@@ -203,6 +213,18 @@ function App() {
             value={resolution}
             onChange={(event) => {
               setParams({ ...params, resolution: event.target.value });
+              forceUpdate();
+            }}
+          />
+        </div>
+        <div className="block">
+          <label htmlFor="scalefactor">Scale factor</label>
+          <input
+            id="scalefactor"
+            type="text"
+            value={scaleFactor}
+            onChange={(event) => {
+              setParams({ ...params, scaleFactor: event.target.value });
               forceUpdate();
             }}
           />
@@ -249,7 +271,9 @@ function App() {
         ) : null}
         <p>
           {loading
-            ? `Loading...${proportion ? (proportion * 100).toPrecision(3) : ""}`
+            ? `Loading...${
+                proportion ? (proportion * 100).toPrecision(3) + "%" : ""
+              }`
             : null}
         </p>
         <button
@@ -317,6 +341,7 @@ function App() {
           }}
           onMouseUp={() => {
             if (+Date.now() - mouseDownTime > 100) {
+              console.log("t1");
               const x1 = Math.min(mouseDown[0], mouseCurr[0]);
               const x2 = Math.max(mouseDown[0], mouseCurr[0]);
               const y1 = Math.min(mouseDown[1], mouseCurr[1]);
@@ -344,6 +369,7 @@ function App() {
               setMouseDown();
               setMouseCurr();
             } else {
+              console.log("t2");
               setMouseDownTime();
               setMouseDown();
               setMouseCurr();
