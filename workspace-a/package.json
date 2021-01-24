@@ -5,6 +5,10 @@
     "build": "webpack",
     "serve": "webpack serve"
   },
+  "files": [
+    "pkg"
+  ],
+  "main": "pkg/index.js",
   "devDependencies": {
     "cross-env": "5.0.5",
     "@wasm-tool/wasm-pack-plugin": "^1.0.1",
