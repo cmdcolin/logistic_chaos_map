@@ -12,41 +12,42 @@ Demo here https://cmdcolin.github.io/logistic_chaos_map/
 
 ## Build
 
+Start a webpack-dev-server for the wasm code
+
 ```
-cd logistic_map_wasm
-wasm-pack build
-cd ..
+## this is the wasm package
+cd workspace-a
+yarn serve
+```
+
+Start a webpack-dev-server for the create-react-app
+
+```
+## this is the create-react-app instance
+cd workspace-b
 yarn start
 ```
-
-Note if you change any wasm code, perform
-
-`rm -rf node_modules/logistic_map_wasm; yarn; yarn start`
-
-This is necessary because when you run `yarn` in the root directory, it copies
-logistic_map_wasm/pkg to node_modules/logistic_map_wasm/
-
-Ideally there would be a smoother workflow but we'll get there soon
 
 ## Notes
 
 The wasm/rust implementation isn't really any faster but it was a fun project.
-It was hard to integrate with create-react-app
+It was a bit tricky to get the integration with create-react-app right
 
-I googled a million times "wasm create-react-app" and stumbled through tons of
-stackoverflow threads, and then found various posts with their published source
-code referring to their demo wasm package on NPM
-([ex1](https://www.npmjs.com/package/@prichey/hello-wasm)
-[ex2](https://www.npmjs.com/package/wasm-koala-blog) those are from popular
-wasm-in-create-react-app articles) and I was like, why can I not get a
-development local build of this to work without publishing my package?
+Important realizations I needed:
 
-The takeaway as of right now is that we have to specifically refer to the pkg
-folder that wasm-bindgen creates using the syntax "mypackage":
-"file:./path/to/pkg" in the create-react-app's package.json. There may be a
-better way with the
-[wasm-pack-plugin](https://github.com/wasm-tool/wasm-pack-plugin)) but I have
-not figured this out quite yet
+- We need to import it the module using dynamic import, not import with the top
+  of the file and we perform an `await import('name_of_module')`, not a
+  specific filename!
+- The name_of_module can be a module published on NPM (as I saw in many
+  tutorials ([ex1](https://www.npmjs.com/package/@prichey/hello-wasm)
+  [ex2](https://www.npmjs.com/package/wasm-koala-blog) or a yarn workspace
+  package [^1]
+
+[^1] It was really confusing to me when I saw these tutorials because they
+would claim to teach how to develop a wasm integration, but don't plain out
+and say that their module was published on NPM, and don't provide a way to
+develop the module locally as far as I could tell. This repo let's you
+develop the wasm and js in parallel
 
 ## Troubleshooting
 
