@@ -49,7 +49,7 @@ function App() {
   useEffect(() => {
     (async () => {
       try {
-        const wasm = await import("logistic_map_wasm");
+        const wasm = await import("workspace-a");
         setWasm(wasm);
       } catch (e) {
         console.error(e);
