@@ -11,6 +11,12 @@ wasm and create-react-app
 
 ![](img/1.png)
 
+App
+
+![](img/2.png)
+
+High res export
+
 See https://cmdcolin.github.io/logistic_chaos_map/
 
 ## Build
