@@ -3,7 +3,11 @@
 The wasm/rust implementation isn't really any faster but it was a fun project.
 It was a bit tricky to get the integration with create-react-app right
 
-## Important realizations to integrate CRA+wasm
+The tutorial at https://rustwasm.github.io/wasm-bindgen/ is a great starting
+point and I highly recommend going through the tutorial, but it was still a
+journey following this to integrate it with create-react-app
+
+## Important realizations to integrate create-react-app+wasm
 
 - We need to import the module using dynamic import, not import with the top of
   the file and we use the name of the module e.g. `await import('name_of_module')`, not a specific filename!
