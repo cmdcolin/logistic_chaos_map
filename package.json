@@ -1,7 +1,7 @@
 {
   "private": true,
   "workspaces": [
-    "workspace-a",
-    "workspace-b"
+    "logistic-map-wasm",
+    "app"
   ]
 }

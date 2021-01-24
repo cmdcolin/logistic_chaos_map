@@ -1,5 +1,5 @@
 {
-  "name": "workspace-a",
+  "name": "logistic-map-wasm",
   "version": "1.0.0",
   "scripts": {
     "build": "webpack",

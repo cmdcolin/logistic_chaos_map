@@ -8,7 +8,7 @@
     "@testing-library/user-event": "^12.1.10",
     "file-saver": "^2.0.5",
     "gh-pages": "^3.1.0",
-    "workspace-a": "^1.0.0",
+    "logistic-map-wasm": "^1.0.0",
     "query-string": "^6.13.7",
     "react": "^17.0.1",
     "react-app-rewired": "^2.1.8",
