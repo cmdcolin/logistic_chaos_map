@@ -45,9 +45,5 @@
       "last 1 safari version"
     ]
   },
-  "homepage": ".",
-  "workspaces": [
-    "workspace-a",
-    "workspace-b"
-  ]
+  "homepage": "."
 }

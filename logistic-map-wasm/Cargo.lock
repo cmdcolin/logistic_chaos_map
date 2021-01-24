@@ -43,7 +43,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "logistic_map"
+name = "logistic-map-wasm"
 version = "0.1.0"
 dependencies = [
  "js-sys",
