@@ -19,7 +19,7 @@ Start a webpack-dev-server for the wasm code
 
 ```
 ## this is the wasm package
-cd workspace-a
+cd logistic-map-wasm
 yarn serve
 ```
 
@@ -27,14 +27,14 @@ Start a webpack-dev-server for the create-react-app
 
 ```
 ## this is the create-react-app instance
-cd workspace-b
+cd app
 yarn start
 ```
 
 To deploy to github pages
 
 ```
-cd workspace-b
+cd app
 yarn deploy
 ```
 
