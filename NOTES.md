@@ -16,21 +16,14 @@ journey following this to integrate it with create-react-app
 
 \*\*\* This part, the fact that it is a module name confused me a lot because
 many tutorials purport to show you how to integrate create-react-app with wasm
-but they have their wasm code published on NPM which is the only(?) reason
-their tutorials work
+but they have their wasm code published on NPM which is the only reason their
+tutorials work if you don't do careful yarn link commands and such. This was
+really confusing to me so I developed this project that uses yarn workspaces
 
 See [ex1](https://www.npmjs.com/package/@prichey/hello-wasm) from
 [here1](https://prestonrichey.com/blog/react-rust-wasm/) and
 [ex2](https://www.npmjs.com/package/wasm-koala-blog) from
 [here2](https://koala42.com/using-webassembly-in-your-reactjs-app/)
-
-## Misconceptions and debunking
-
-It was really confusing to me when I saw these tutorials because they
-would claim to teach how to develop a wasm integration, but don't plain out
-and say that their module was published on NPM, and don't provide a way to
-develop the module locally as far as I could tell. This repo let's you
-develop the wasm and js in parallel
 
 ## Troubleshooting
 
