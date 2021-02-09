@@ -5,7 +5,9 @@ canvas and some basic JS. It also implements the same logistic map drawing code
 in WASM and js
 
 I think this repo is fairly unique for making a fairly minimal integration of
-wasm and create-react-app
+wasm and create-react-app. It uses yarn workspaces with the wasm code in one
+workspace and the create-react-app in another workspace. See [notes](NOTES.md)
+for more details
 
 ## Screenshot
 
