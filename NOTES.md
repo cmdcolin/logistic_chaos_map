@@ -18,7 +18,7 @@ journey following this to integrate it with create-react-app
 \*\*\*This part confused me a lot because
 many tutorials purport to show you how to integrate create-react-app with wasm
 but they have their wasm code published on NPM which is the only reason their
-tutorials work basically. Their tutorials don't really tell you to use a monorepo package or perform `yarn link`, so it is only working in their tutorials because it is downloading their wasm package from npm.
+tutorials work basically. Their tutorials don't really tell you to use a monorepo package and if you're not careful, you may miss their instructions to use `npm link`, so it is only working in their tutorials because it is downloading their wasm package from npm.
 
 
 See the npm package [@prichery/hello-wasm](https://www.npmjs.com/package/@prichey/hello-wasm) from
