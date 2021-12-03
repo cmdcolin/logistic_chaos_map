@@ -13,12 +13,12 @@ journey following this to integrate it with create-react-app
 
 - We import the name of our wasm module e.g. `await import('name_of_module')`, we don't import a specific filename!
 
-- The name_of_module can be a module published on NPM or a yarn workspace package inside your monorepo\*\*\*
+- The module name that you import can be module published on NPM or a yarn workspace package inside your monorepo\*\*\*
 
-\*\*\* This part, the fact that it is a module name confused me a lot because
+\*\*\*This part confused me a lot because
 many tutorials purport to show you how to integrate create-react-app with wasm
 but they have their wasm code published on NPM which is the only reason their
-tutorials work basically. Their tutorials don't really tell you to use a monorepo package or perform yarn link so it really only works because it is downloading their wasm package from npm.
+tutorials work basically. Their tutorials don't really tell you to use a monorepo package or perform `yarn link`, so it is only working in their tutorials because it is downloading their wasm package from npm.
 
 
 See the npm package [@prichery/hello-wasm](https://www.npmjs.com/package/@prichey/hello-wasm) from
