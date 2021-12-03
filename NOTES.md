@@ -9,21 +9,24 @@ journey following this to integrate it with create-react-app
 
 ## Important realizations to integrate create-react-app+wasm
 
-- We need to import the module using dynamic import, not import with the top of
-  the file and we use the name of the module e.g. `await import('name_of_module')`, not a specific filename!
-- The name_of_module can be a module published on NPM or a yarn workspace
-  package\*\*\*
+- We need to import the module using dynamic import e.g. await import('name_of_module'), not standard static top level import
+
+- We import the name of our wasm module e.g. `await import('name_of_module')`, we don't import a specific filename!
+
+- The name_of_module can be a module published on NPM or a yarn workspace package inside your monorepo\*\*\*
 
 \*\*\* This part, the fact that it is a module name confused me a lot because
 many tutorials purport to show you how to integrate create-react-app with wasm
 but they have their wasm code published on NPM which is the only reason their
-tutorials work if you don't do careful yarn link commands and such. This was
-really confusing to me so I developed this project that uses yarn workspaces
+tutorials work basically. Their tutorials don't really tell you to use a monorepo package or perform yarn link so it really only works because it is downloading their wasm package from npm.
 
-See [ex1](https://www.npmjs.com/package/@prichey/hello-wasm) from
-[here1](https://prestonrichey.com/blog/react-rust-wasm/) and
-[ex2](https://www.npmjs.com/package/wasm-koala-blog) from
-[here2](https://koala42.com/using-webassembly-in-your-reactjs-app/)
+
+See the npm package [@prichery/hello-wasm](https://www.npmjs.com/package/@prichey/hello-wasm) from
+[from this tutorial](https://prestonrichey.com/blog/react-rust-wasm/) and
+the npm package [wasm-koala-blog](https://www.npmjs.com/package/wasm-koala-blog) from
+[from this tutorial](https://koala42.com/using-webassembly-in-your-reactjs-app/)
+
+In my repo here, it doesn't use a package published on npm, it uses a module inside the monorepo (which could be published to npm, but that's not required to make it work)
 
 ## Troubleshooting
 
