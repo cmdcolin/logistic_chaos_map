@@ -10,9 +10,9 @@
   ],
   "main": "pkg/index.js",
   "devDependencies": {
-    "cross-env": "5.0.5",
     "@wasm-tool/wasm-pack-plugin": "^1.0.1",
-    "html-webpack-plugin": "^4.5.0",
+    "cross-env": "7.0.3",
+    "html-webpack-plugin": "^5.5.0",
     "text-encoding": "^0.7.0",
     "webpack": "^5.11.1",
     "webpack-cli": "^4.3.1"

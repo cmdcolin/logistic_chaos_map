@@ -2,6 +2,7 @@
   "private": true,
   "workspaces": [
     "logistic-map-wasm",
+    "hello",
     "app"
   ]
 }
