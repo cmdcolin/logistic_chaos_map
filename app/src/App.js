@@ -14,8 +14,9 @@ function App() {
   const [maxX, setMaxX] = useState(+(p.get('maxX') ?? 1))
   const [minR, setMinR] = useState(+(p.get('minR') ?? 2))
   const [maxR, setMaxR] = useState(+(p.get('maxR') ?? 4))
+  const [M, setM] = useState(+(p.get('M') ?? 50000))
   const [opacity, setOpacity] = useState(+(p.get('opacity') ?? 0.3))
-  const [resolution, setResolution] = useState(+(p.get('resolution') ?? 1000))
+  const [N, setN] = useState(+(p.get('N') ?? 1000))
   const [animate, setAnimate] = useState(JSON.parse(p.get('animate') ?? true))
   const [useWasm, setUseWasm] = useState(JSON.parse(p.get('useWasm') ?? false))
   const [vert, setVert] = useState(JSON.parse(p.get('vert') ?? false))
@@ -38,7 +39,7 @@ function App() {
       minR,
       maxR,
       opacity,
-      resolution,
+      N,
       animate,
       vert,
       scaleFactor,
@@ -48,18 +49,7 @@ function App() {
       '',
       `${window.location.pathname}?${new URLSearchParams(p)}`,
     )
-  }, [
-    minX,
-    maxX,
-    minR,
-    maxR,
-    scaleFactor,
-    animate,
-    vert,
-    opacity,
-    useWasm,
-    resolution,
-  ])
+  }, [minX, maxX, minR, maxR, scaleFactor, animate, vert, opacity, useWasm, N])
 
   useEffect(() => {
     ;(async () => {
@@ -75,12 +65,12 @@ function App() {
   useEffect(() => {
     let cancelled = false
     ;(async () => {
-      const factor = +scaleFactor
       if (
         wasm &&
-        !Number.isNaN(factor) &&
+        !Number.isNaN(+scaleFactor) &&
         !Number.isNaN(+opacity) &&
-        !Number.isNaN(+resolution)
+        !Number.isNaN(+N) &&
+        !Number.isNaN(+M)
       ) {
         if (!draw) {
           return
@@ -90,6 +80,7 @@ function App() {
           return
         }
         const { width, height } = draw.getBoundingClientRect()
+        const factor = +scaleFactor
         draw.width = width * factor
         draw.height = height * factor
 
@@ -109,8 +100,9 @@ function App() {
               maxR,
               minX,
               maxX,
-              +resolution,
               vert,
+              +M,
+              +N,
             )
           } else {
             let lastTime = +Date.now()
@@ -122,8 +114,9 @@ function App() {
               maxR,
               minX,
               maxX,
-              +resolution,
               vert,
+              +M,
+              +N,
             )) {
               if (animate) {
                 setProportion(iter / (width * factor))
@@ -160,7 +153,7 @@ function App() {
     animate,
     useWasm,
     opacity,
-    resolution,
+    N,
     draw,
     wasm,
   ])
@@ -191,12 +184,17 @@ function App() {
       <p>
         The function above is iterated for values of r between [2,4] and x
         between [0,1] and points. Click and drag a region to zoom in. The
-        program iterates until it draws N points in the zoomed in region, which
-        results in higher computation time at zoomed in values. When zoomed in,
-        it has to iterate the logistic map longer to find that many points to
-        draw resulting in it being slower when zoomed in. The scale factor makes
-        the canvas size larger, allowing the code to render higher resolution
-        (larger) images.
+        program iterates, trying to draw N points (with a limit of iterating M
+        times) in the zoomed in region, which results in higher computation time
+        at zoomed in values. When zoomed in, it has to iterate the logistic map
+        longer to find that many points to draw resulting in it being slower
+        when zoomed in.
+      </p>
+
+      <p>
+        The scale factor makes the canvas size larger, allowing the code to
+        render higher N (larger) images. Increasing M and N can allow rendering
+        denser fractals at high zoom levels.
       </p>
       <p>
         Note: my main goal when starting this project was to demonstrate using
@@ -218,12 +216,21 @@ function App() {
           />
         </div>
         <div className="block">
-          <label htmlFor="resolution">N</label>
+          <label htmlFor="N">N</label>
           <input
-            id="resolution"
+            id="N"
             type="text"
-            value={resolution}
-            onChange={event => setResolution(event.target.value)}
+            value={N}
+            onChange={event => setN(event.target.value)}
+          />
+        </div>
+        <div className="block">
+          <label htmlFor="M">M</label>
+          <input
+            id="M"
+            type="text"
+            value={M}
+            onChange={event => setM(event.target.value)}
           />
         </div>
         <div className="block">
