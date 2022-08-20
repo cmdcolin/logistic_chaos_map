@@ -128,7 +128,7 @@ function App() {
               if (animate) {
                 setProportion(iter / (width * factor))
                 if (+Date.now() - lastTime > 10) {
-                  await new Promise(resolve => setTimeout(resolve, 1))
+                  await new Promise(resolve => setTimeout(resolve, 0))
                   lastTime = +Date.now()
                 }
               }
@@ -333,6 +333,8 @@ function App() {
           onMouseUp={() => {
             if (
               +Date.now() - mouseDownTime > 100 &&
+              mouseDown &&
+              mouseCurr &&
               Math.abs(mouseDown[0] - mouseCurr[0]) > 3 &&
               Math.abs(mouseDown[1] - mouseCurr[1]) > 3
             ) {
