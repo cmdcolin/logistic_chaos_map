@@ -14,6 +14,7 @@ function App() {
   const [maxX, setMaxX] = useState(+(p.get('maxX') ?? 1))
   const [minR, setMinR] = useState(+(p.get('minR') ?? 2))
   const [maxR, setMaxR] = useState(+(p.get('maxR') ?? 4))
+  const [time, setTime] = useState(0)
   const [opacity, setOpacity] = useState(+(p.get('opacity') ?? 0.3))
   const [resolution, setResolution] = useState(+(p.get('resolution') ?? 1000))
   const [animate, setAnimate] = useState(JSON.parse(p.get('animate') ?? true))
@@ -103,6 +104,7 @@ function App() {
           ctx.fillRect(0, 0, width * factor, height * factor)
           ctx.fillStyle = `rgba(0,0,0,${+opacity})`
           if (drawWithWasm) {
+            let lastTime = +Date.now()
             wasm.draw(
               ctx,
               width * factor,
@@ -114,6 +116,7 @@ function App() {
               +resolution,
               vertical,
             )
+            setTime(+Date.now() - lastTime)
           } else {
             let lastTime = +Date.now()
             for (const iter of drawCanvas(
@@ -138,6 +141,7 @@ function App() {
                 break
               }
             }
+            setTime(+Date.now() - lastTime)
           }
 
           //if !cancelled seems to be a race condition?
@@ -208,7 +212,9 @@ function App() {
         wasm+react in a monorepo in a basic way. The source code is here{' '}
         <a href="https://github.com/cmdcolin/logistic_chaos_map">Github</a>. The
         wasm drawing mode is not faster and doesn't provide the
-        animation/progress bar but may be able to be improved.
+        animation/progress bar but may be able to be improved. Also note, the
+        work is done on the main thread so the browser may hang if animation is
+        not used
       </p>
       <div className="controls">
         <div className="block">
@@ -294,6 +300,7 @@ function App() {
         >
           Reset
         </button>
+        {loading ? null : <p>Render time: {time / 1000}s</p>}
       </div>
       <div style={{ position: 'relative' }}>
         <canvas
