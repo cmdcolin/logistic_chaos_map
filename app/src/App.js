@@ -1,50 +1,68 @@
 /* eslint-disable no-unused-vars */
 import "./App.css";
-import { useCallback, useEffect, useState } from "react";
-import {
-  BooleanParam,
-  NumberParam,
-  StringParam,
-  useQueryParams,
-  withDefault,
-} from "use-query-params";
+import { useEffect, useState } from "react";
 import drawCanvas from "./drawCanvas";
 import saveAs from "file-saver";
 
-function timeout(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-export function useForceUpdate() {
-  const [, setTick] = useState(0);
-  const update = useCallback(() => {
-    setTick((tick) => tick + 1);
-  }, []);
-  return update;
-}
+const p = new URLSearchParams(window.location.search);
 
 function App() {
   const [draw, setDraw] = useState();
   const [mouseover, setMouseover] = useState();
-  const [params, setParams] = useQueryParams({
-    minX: withDefault(NumberParam, 0),
-    maxX: withDefault(NumberParam, 1),
-    minR: withDefault(NumberParam, 2),
-    maxR: withDefault(NumberParam, 4),
-    opacity: withDefault(StringParam, "0.3"),
-    resolution: withDefault(StringParam, "1000"),
-    animate: withDefault(BooleanParam, true),
-    drawWithWasm: withDefault(BooleanParam, false),
-    vertical: withDefault(BooleanParam, false),
-    scaleFactor: withDefault(StringParam, "2"),
-  });
+
+  const [minX, setMinX] = useState(+(p.get("minX") ?? 0));
+  const [maxX, setMaxX] = useState(+(p.get("maxX") ?? 1));
+  const [minR, setMinR] = useState(+(p.get("minR") ?? 2));
+  const [maxR, setMaxR] = useState(+(p.get("maxR") ?? 4));
+  const [opacity, setOpacity] = useState(+(p.get("opacity") ?? 0.3));
+  const [resolution, setResolution] = useState(+(p.get("resolution") ?? 1000));
+  const [animate, setAnimate] = useState(JSON.parse(p.get("animate") ?? true));
+  const [drawWithWasm, setDrawWithWasm] = useState(
+    JSON.parse(p.get("drawWithWasm") ?? false)
+  );
+  const [vertical, setVertical] = useState(
+    JSON.parse(p.get("vertical") ?? false)
+  );
+  const [scaleFactor, setScaleFactor] = useState(+(p.get("scaleFactor") ?? 2));
+
   const [mouseDown, setMouseDown] = useState();
   const [mouseDownTime, setMouseDownTime] = useState();
   const [mouseCurr, setMouseCurr] = useState();
   const [loading, setLoading] = useState(true);
   const [wasm, setWasm] = useState();
   const [proportion, setProportion] = useState(0);
-  const forceUpdate = useForceUpdate();
+
+  useEffect(() => {
+    const p = {
+      drawWithWasm,
+      minX,
+      maxX,
+      minR,
+      maxR,
+      opacity,
+      resolution,
+      animate,
+      vertical,
+      scaleFactor,
+    };
+    const params = new URLSearchParams(p);
+    window.history.pushState(
+      p,
+      "",
+      window.location.pathname + "?" + params.toString()
+    );
+  }, [
+    minX,
+    maxX,
+    minR,
+    maxR,
+    scaleFactor,
+    animate,
+    vertical,
+    opacity,
+    drawWithWasm,
+    resolution,
+  ]);
 
   useEffect(() => {
     (async () => {
@@ -56,22 +74,11 @@ function App() {
       }
     })();
   }, []);
-  const {
-    drawWithWasm,
-    minX,
-    maxX,
-    minR,
-    maxR,
-    opacity,
-    resolution,
-    animate,
-    vertical,
-    scaleFactor,
-  } = params;
-  const factor = +scaleFactor;
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      const factor = +scaleFactor;
       if (
         wasm &&
         !Number.isNaN(factor) &&
@@ -121,7 +128,7 @@ function App() {
             )) {
               if (animate) {
                 setProportion(iter / (width * factor));
-                await timeout(1);
+                await new Promise((resolve) => setTimeout(resolve, 1));
               }
               if (cancelled) {
                 break;
@@ -145,7 +152,7 @@ function App() {
     maxR,
     minX,
     maxX,
-    factor,
+    scaleFactor,
     vertical,
     animate,
     drawWithWasm,
@@ -199,10 +206,7 @@ function App() {
             id="opacity"
             type="text"
             value={opacity}
-            onChange={(event) => {
-              setParams({ ...params, opacity: event.target.value });
-              forceUpdate();
-            }}
+            onChange={(event) => setOpacity(event.target.value)}
           />
         </div>
         <div className="block">
@@ -211,10 +215,7 @@ function App() {
             id="resolution"
             type="text"
             value={resolution}
-            onChange={(event) => {
-              setParams({ ...params, resolution: event.target.value });
-              forceUpdate();
-            }}
+            onChange={(event) => setResolution(event.target.value)}
           />
         </div>
         <div className="block">
@@ -223,10 +224,7 @@ function App() {
             id="scalefactor"
             type="text"
             value={scaleFactor}
-            onChange={(event) => {
-              setParams({ ...params, scaleFactor: event.target.value });
-              forceUpdate();
-            }}
+            onChange={(event) => setScaleFactor(event.target.value)}
           />
         </div>
 
@@ -236,10 +234,7 @@ function App() {
             id="wasm"
             type="checkbox"
             checked={drawWithWasm}
-            onChange={(event) => {
-              setParams({ ...params, drawWithWasm: event.target.checked });
-              forceUpdate();
-            }}
+            onChange={(event) => setDrawWithWasm(event.target.checked)}
           />
         </div>
         <div className="block">
@@ -248,10 +243,7 @@ function App() {
             id="vertical"
             type="checkbox"
             checked={vertical}
-            onChange={(event) => {
-              setParams({ ...params, vertical: event.target.checked });
-              forceUpdate();
-            }}
+            onChange={(event) => setVertical(event.target.checked)}
           />
         </div>
         {!drawWithWasm ? (
@@ -261,11 +253,8 @@ function App() {
               id="animate"
               disabled={drawWithWasm}
               type="checkbox"
-              checked={params.animate}
-              onChange={(event) => {
-                setParams({ ...params, animate: event.target.checked });
-                forceUpdate();
-              }}
+              checked={animate}
+              onChange={(event) => setAnimate(event.target.checked)}
             />
           </div>
         ) : null}
@@ -277,25 +266,21 @@ function App() {
             : null}
         </p>
         <button
-          onClick={() => {
-            draw.toBlob(function (blob) {
-              saveAs(blob, `logistic_map_${+Date.now()}.png`);
-            });
-          }}
+          onClick={() =>
+            draw.toBlob((blob) =>
+              saveAs(blob, `logistic_map_${+Date.now()}.png`)
+            )
+          }
         >
           Save as PNG
         </button>
 
         <button
           onClick={() => {
-            setParams({
-              ...params,
-              minX: 0,
-              maxX: 1,
-              minR: 2,
-              maxR: 4,
-            });
-            forceUpdate();
+            setMaxX(1);
+            setMinX(0);
+            setMinR(2);
+            setMaxR(4);
           }}
         >
           Reset
@@ -341,14 +326,13 @@ function App() {
           }}
           onMouseUp={() => {
             if (+Date.now() - mouseDownTime > 100) {
-              console.log("t1");
               const x1 = Math.min(mouseDown[0], mouseCurr[0]);
               const x2 = Math.max(mouseDown[0], mouseCurr[0]);
               const y1 = Math.min(mouseDown[1], mouseCurr[1]);
               const y2 = Math.max(mouseDown[1], mouseCurr[1]);
               const { width, height } = mouseover.getBoundingClientRect();
 
-              const newParams = !vertical
+              const n = !vertical
                 ? {
                     minR: ((maxR - minR) * x1) / width + minR,
                     maxR: ((maxR - minR) * x2) / width + minR,
@@ -361,15 +345,14 @@ function App() {
                     minX: ((maxX - minX) * x1) / width + minX,
                     maxX: ((maxX - minX) * x2) / width + minX,
                   };
-              setParams({
-                ...params,
-                ...newParams,
-              });
-              forceUpdate();
+
+              setMaxX(n.maxX);
+              setMinX(n.minX);
+              setMaxR(n.maxR);
+              setMinR(n.minR);
               setMouseDown();
               setMouseCurr();
             } else {
-              console.log("t2");
               setMouseDownTime();
               setMouseDown();
               setMouseCurr();

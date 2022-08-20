@@ -6,8 +6,9 @@ in WASM and js
 
 I think this repo is fairly unique for making a fairly minimal integration of
 wasm and create-react-app. It uses yarn workspaces with the wasm code in one
-workspace and the create-react-app in another workspace. See [notes](NOTES.md)
-for more details
+workspace and the create-react-app in another workspace.
+
+See [NOTES.md](NOTES.md) for some fun details I discovered while creating this!
 
 ## Screenshot
 
