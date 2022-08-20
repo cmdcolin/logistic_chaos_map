@@ -2,6 +2,7 @@ import './App.css'
 import { useEffect, useState } from 'react'
 import drawCanvas from './drawCanvas'
 import saveAs from 'file-saver'
+import packageJSON from '../package.json'
 
 const p = new URLSearchParams(window.location.search)
 
@@ -182,6 +183,7 @@ function App() {
   return (
     <div style={{ margin: 20 }}>
       <h1>f(x)=rx(x-1)</h1>
+      <h2>v{packageJSON.version}</h2>
       <p>
         The function above is iterated for values of r between [2,4] and x
         between [0,1] and points. Click and drag a region to zoom in. The
