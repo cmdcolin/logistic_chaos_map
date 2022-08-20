@@ -195,9 +195,13 @@ function App() {
       </p>
 
       <p>
-        The scale factor makes the canvas size larger, allowing the code to
-        render higher N (larger) images. Increasing M and N can allow rendering
-        denser fractals at high zoom levels.
+        The scale factor (can make it e.g. 4 to make the canvas 4x larger than
+        the screen size itself) makes the canvas size larger, allowing the code
+        to render higher resolution images (use the "Save PNG" to save the
+        resulting image). You can then import the result into gimp and do smooth
+        downsampling of the result to get smooth unpixelated textures.
+        Increasing the M and N paramters allows controlling how many points are
+        drawn at high zoom level.
       </p>
       <p>
         Note: my main goal when starting this project was to demonstrate using
@@ -207,6 +211,10 @@ function App() {
         animation/progress bar but may be able to be improved. Also note, the
         work is done on the main thread so the browser may hang if animation is
         not used
+      </p>
+      <p>
+        See <a href="https://en.wikipedia.org/wiki/Logistic_map">Wikipedia</a>{' '}
+        for more info on the fractal
       </p>
       <div className="controls">
         <div className="block">
@@ -247,7 +255,9 @@ function App() {
         </div>
 
         <div className="block">
-          <label htmlFor="wasm">Draw with WASM</label>
+          <label htmlFor="wasm">
+            Draw with WASM (warning: if used, main thread may hang){' '}
+          </label>
           <input
             id="wasm"
             type="checkbox"
@@ -266,7 +276,9 @@ function App() {
         </div>
         {!useWasm ? (
           <div className="block">
-            <label htmlFor="animate">Animate?</label>
+            <label htmlFor="animate">
+              Animate (warning: if off, main thread may hang)
+            </label>
             <input
               id="animate"
               disabled={useWasm}
@@ -342,11 +354,10 @@ function App() {
           }}
           onMouseUp={() => {
             if (
-              +Date.now() - mouseDownTime > 100 &&
               mouseDown &&
               mouseCurr &&
-              Math.abs(mouseDown[0] - mouseCurr[0]) > 3 &&
-              Math.abs(mouseDown[1] - mouseCurr[1]) > 3
+              Math.abs(mouseDown[0] - mouseCurr[0]) > 2 &&
+              Math.abs(mouseDown[1] - mouseCurr[1]) > 2
             ) {
               const x1 = Math.min(mouseDown[0], mouseCurr[0])
               const x2 = Math.max(mouseDown[0], mouseCurr[0])
