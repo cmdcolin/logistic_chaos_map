@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import drawCanvas from "./drawCanvas";
 import saveAs from "file-saver";
 
+const p = new URLSearchParams(window.location.search);
+
 function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -19,22 +21,30 @@ export function useForceUpdate() {
 function App() {
   const [draw, setDraw] = useState();
   const [mouseover, setMouseover] = useState();
-  const [minX, setMinX] = useState(0);
-  const [maxX, setMaxX] = useState(1);
-  const [minR, setMinR] = useState(2);
-  const [maxR, setMaxR] = useState(4);
-  const [opacity, setOpacity] = useState(0.3);
-  const [resolution, setResolution] = useState(1000);
-  const [animate, setAnimate] = useState(true);
-  const [drawWithWasm, setDrawWithWasm] = useState(false);
-  const [vertical, setVertical] = useState(false);
-  const [scaleFactor, setScaleFactor] = useState(2);
+
+  const [minX, setMinX] = useState(+(p.get("minX") ?? 0));
+  const [maxX, setMaxX] = useState(+(p.get("maxX") ?? 1));
+  const [minR, setMinR] = useState(+(p.get("minR") ?? 2));
+  const [maxR, setMaxR] = useState(+(p.get("maxR") ?? 4));
+  const [opacity, setOpacity] = useState(+(p.get("opacity") ?? 0.3));
+  const [resolution, setResolution] = useState(+(p.get("resolution") ?? 1000));
+  const [animate, setAnimate] = useState(JSON.parse(p.get("animate") ?? true));
+  const [drawWithWasm, setDrawWithWasm] = useState(
+    JSON.parse(p.get("drawWithWasm") ?? false)
+  );
+  const [vertical, setVertical] = useState(
+    JSON.parse(p.get("vertical") ?? false)
+  );
+  const [scaleFactor, setScaleFactor] = useState(+(p.get("scaleFactor") ?? 2));
+  console.log(minX, maxX, minR, maxR, opacity);
+
   const [mouseDown, setMouseDown] = useState();
   const [mouseDownTime, setMouseDownTime] = useState();
   const [mouseCurr, setMouseCurr] = useState();
   const [loading, setLoading] = useState(true);
   const [wasm, setWasm] = useState();
   const [proportion, setProportion] = useState(0);
+
   useEffect(() => {
     const p = {
       drawWithWasm,
@@ -52,7 +62,7 @@ function App() {
     window.history.pushState(
       p,
       "",
-      window.location.pathname + params.toString()
+      window.location.pathname + "?" + params.toString()
     );
   }, [
     minX,
@@ -237,7 +247,7 @@ function App() {
             id="wasm"
             type="checkbox"
             checked={drawWithWasm}
-            onChange={(event) => setDrawWithWasm(event.target.value)}
+            onChange={(event) => setDrawWithWasm(event.target.checked)}
           />
         </div>
         <div className="block">
@@ -246,7 +256,7 @@ function App() {
             id="vertical"
             type="checkbox"
             checked={vertical}
-            onChange={(event) => setVertical(event.target.value)}
+            onChange={(event) => setVertical(event.target.checked)}
           />
         </div>
         {!drawWithWasm ? (
@@ -257,7 +267,7 @@ function App() {
               disabled={drawWithWasm}
               type="checkbox"
               checked={animate}
-              onChange={(event) => setAnimate(event.target.value)}
+              onChange={(event) => setAnimate(event.target.checked)}
             />
           </div>
         ) : null}
