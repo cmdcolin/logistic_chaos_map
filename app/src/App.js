@@ -9,11 +9,11 @@ function App() {
   const [draw, setDraw] = useState()
   const [mouseover, setMouseover] = useState()
 
+  // url params
   const [minX, setMinX] = useState(+(p.get('minX') ?? 0))
   const [maxX, setMaxX] = useState(+(p.get('maxX') ?? 1))
   const [minR, setMinR] = useState(+(p.get('minR') ?? 2))
   const [maxR, setMaxR] = useState(+(p.get('maxR') ?? 4))
-  const [time, setTime] = useState(0)
   const [opacity, setOpacity] = useState(+(p.get('opacity') ?? 0.3))
   const [resolution, setResolution] = useState(+(p.get('resolution') ?? 1000))
   const [animate, setAnimate] = useState(JSON.parse(p.get('animate') ?? true))
@@ -21,12 +21,14 @@ function App() {
   const [vert, setVert] = useState(JSON.parse(p.get('vert') ?? false))
   const [scaleFactor, setScaleFactor] = useState(+(p.get('scaleFactor') ?? 2))
 
+  // internal states
   const [mouseDown, setMouseDown] = useState()
   const [mouseDownTime, setMouseDownTime] = useState()
   const [mouseCurr, setMouseCurr] = useState()
   const [loading, setLoading] = useState(true)
   const [wasm, setWasm] = useState()
   const [proportion, setProportion] = useState(0)
+  const [time, setTime] = useState(0)
 
   useEffect(() => {
     const p = {
@@ -97,8 +99,8 @@ function App() {
           ctx.fillStyle = 'white'
           ctx.fillRect(0, 0, width * factor, height * factor)
           ctx.fillStyle = `rgba(0,0,0,${+opacity})`
+          const startTime = +Date.now()
           if (useWasm) {
-            let lastTime = +Date.now()
             wasm.draw(
               ctx,
               width * factor,
@@ -110,7 +112,6 @@ function App() {
               +resolution,
               vert,
             )
-            setTime(+Date.now() - lastTime)
           } else {
             let lastTime = +Date.now()
             for (const iter of drawCanvas(
@@ -135,8 +136,8 @@ function App() {
                 break
               }
             }
-            setTime(+Date.now() - lastTime)
           }
+          setTime(+Date.now() - startTime)
 
           //if !cancelled seems to be a race condition?
           if (!cancelled) {
@@ -186,11 +187,7 @@ function App() {
 
   return (
     <div style={{ margin: 20 }}>
-      <h1>
-        <a href="https://github.com/cmdcolin/logistic_chaos_map">
-          f(x)=rx(x-1)
-        </a>
-      </h1>
+      <h1>f(x)=rx(x-1)</h1>
       <p>
         The function above is iterated for values of r between [2,4] and x
         between [0,1] and points. Click and drag a region to zoom in. The
@@ -277,9 +274,7 @@ function App() {
             : null}
         </p>
         <button
-          onClick={() =>
-            draw.toBlob(blob => saveAs(blob, `logistic_map_${+Date.now()}.png`))
-          }
+          onClick={() => draw.toBlob(b => saveAs(b, `frac_${+Date.now()}.png`))}
         >
           Save as PNG
         </button>

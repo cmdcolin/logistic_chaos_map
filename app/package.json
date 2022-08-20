@@ -34,7 +34,10 @@
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "rules": {
+      "curly": "error"
+    }
   },
   "browserslist": {
     "production": [
