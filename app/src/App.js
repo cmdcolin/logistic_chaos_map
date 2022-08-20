@@ -154,6 +154,7 @@ function App() {
     useWasm,
     opacity,
     N,
+    M,
     draw,
     wasm,
   ])
