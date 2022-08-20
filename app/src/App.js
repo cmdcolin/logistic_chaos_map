@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import './App.css'
 import { useEffect, useState } from 'react'
 import drawCanvas from './drawCanvas'
@@ -18,12 +17,8 @@ function App() {
   const [opacity, setOpacity] = useState(+(p.get('opacity') ?? 0.3))
   const [resolution, setResolution] = useState(+(p.get('resolution') ?? 1000))
   const [animate, setAnimate] = useState(JSON.parse(p.get('animate') ?? true))
-  const [drawWithWasm, setDrawWithWasm] = useState(
-    JSON.parse(p.get('drawWithWasm') ?? false),
-  )
-  const [vertical, setVertical] = useState(
-    JSON.parse(p.get('vertical') ?? false),
-  )
+  const [useWasm, setUseWasm] = useState(JSON.parse(p.get('useWasm') ?? false))
+  const [vert, setVert] = useState(JSON.parse(p.get('vert') ?? false))
   const [scaleFactor, setScaleFactor] = useState(+(p.get('scaleFactor') ?? 2))
 
   const [mouseDown, setMouseDown] = useState()
@@ -35,7 +30,7 @@ function App() {
 
   useEffect(() => {
     const p = {
-      drawWithWasm,
+      useWasm,
       minX,
       maxX,
       minR,
@@ -43,7 +38,7 @@ function App() {
       opacity,
       resolution,
       animate,
-      vertical,
+      vert,
       scaleFactor,
     }
     window.history.replaceState(
@@ -58,9 +53,9 @@ function App() {
     maxR,
     scaleFactor,
     animate,
-    vertical,
+    vert,
     opacity,
-    drawWithWasm,
+    useWasm,
     resolution,
   ])
 
@@ -102,7 +97,7 @@ function App() {
           ctx.fillStyle = 'white'
           ctx.fillRect(0, 0, width * factor, height * factor)
           ctx.fillStyle = `rgba(0,0,0,${+opacity})`
-          if (drawWithWasm) {
+          if (useWasm) {
             let lastTime = +Date.now()
             wasm.draw(
               ctx,
@@ -113,7 +108,7 @@ function App() {
               minX,
               maxX,
               +resolution,
-              vertical,
+              vert,
             )
             setTime(+Date.now() - lastTime)
           } else {
@@ -127,7 +122,7 @@ function App() {
               minX,
               maxX,
               +resolution,
-              vertical,
+              vert,
             )) {
               if (animate) {
                 setProportion(iter / (width * factor))
@@ -160,9 +155,9 @@ function App() {
     minX,
     maxX,
     scaleFactor,
-    vertical,
+    vert,
     animate,
-    drawWithWasm,
+    useWasm,
     opacity,
     resolution,
     draw,
@@ -249,25 +244,25 @@ function App() {
           <input
             id="wasm"
             type="checkbox"
-            checked={drawWithWasm}
-            onChange={event => setDrawWithWasm(event.target.checked)}
+            checked={useWasm}
+            onChange={event => setUseWasm(event.target.checked)}
           />
         </div>
         <div className="block">
-          <label htmlFor="vertical">Vertical</label>
+          <label htmlFor="vert">Vertical</label>
           <input
-            id="vertical"
+            id="vert"
             type="checkbox"
-            checked={vertical}
-            onChange={event => setVertical(event.target.checked)}
+            checked={vert}
+            onChange={event => setVert(event.target.checked)}
           />
         </div>
-        {!drawWithWasm ? (
+        {!useWasm ? (
           <div className="block">
             <label htmlFor="animate">Animate?</label>
             <input
               id="animate"
-              disabled={drawWithWasm}
+              disabled={useWasm}
               type="checkbox"
               checked={animate}
               onChange={event => setAnimate(event.target.checked)}
@@ -352,7 +347,7 @@ function App() {
               const y2 = Math.max(mouseDown[1], mouseCurr[1])
               const { width, height } = mouseover.getBoundingClientRect()
 
-              const n = !vertical
+              const n = !vert
                 ? {
                     minR: ((maxR - minR) * x1) / width + minR,
                     maxR: ((maxR - minR) * x2) / width + minR,
