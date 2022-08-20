@@ -7,14 +7,9 @@ module.exports = {
       const wasmExtensionRegExp = /\.wasm$/;
       config.resolve.extensions.push(".wasm");
       config.experiments = {
-        asyncWebAssembly: false,
-        lazyCompilation: true,
         syncWebAssembly: true,
-        topLevelAwait: true,
       };
-      config.resolve.fallback = {
-        buffer: require.resolve("buffer/"),
-      };
+
       config.module.rules.forEach((rule) => {
         (rule.oneOf || []).forEach((oneOf) => {
           if (oneOf.type === "asset/resource") {
@@ -22,11 +17,6 @@ module.exports = {
           }
         });
       });
-      config.plugins.push(
-        new webpack.ProvidePlugin({
-          Buffer: ["buffer", "Buffer"],
-        })
-      );
 
       return config;
     },

@@ -1,22 +1,10 @@
 /* eslint-disable no-unused-vars */
 import "./App.css";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import drawCanvas from "./drawCanvas";
 import saveAs from "file-saver";
 
 const p = new URLSearchParams(window.location.search);
-
-function timeout(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-export function useForceUpdate() {
-  const [, setTick] = useState(0);
-  const update = useCallback(() => {
-    setTick((tick) => tick + 1);
-  }, []);
-  return update;
-}
 
 function App() {
   const [draw, setDraw] = useState();
@@ -36,7 +24,6 @@ function App() {
     JSON.parse(p.get("vertical") ?? false)
   );
   const [scaleFactor, setScaleFactor] = useState(+(p.get("scaleFactor") ?? 2));
-  console.log(minX, maxX, minR, maxR, opacity);
 
   const [mouseDown, setMouseDown] = useState();
   const [mouseDownTime, setMouseDownTime] = useState();
@@ -88,10 +75,10 @@ function App() {
     })();
   }, []);
 
-  const factor = +scaleFactor;
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      const factor = +scaleFactor;
       if (
         wasm &&
         !Number.isNaN(factor) &&
@@ -141,7 +128,7 @@ function App() {
             )) {
               if (animate) {
                 setProportion(iter / (width * factor));
-                await timeout(1);
+                await new Promise((resolve) => setTimeout(resolve, 1));
               }
               if (cancelled) {
                 break;
@@ -165,7 +152,7 @@ function App() {
     maxR,
     minX,
     maxX,
-    factor,
+    scaleFactor,
     vertical,
     animate,
     drawWithWasm,
@@ -279,11 +266,11 @@ function App() {
             : null}
         </p>
         <button
-          onClick={() => {
-            draw.toBlob(function (blob) {
-              saveAs(blob, `logistic_map_${+Date.now()}.png`);
-            });
-          }}
+          onClick={() =>
+            draw.toBlob((blob) =>
+              saveAs(blob, `logistic_map_${+Date.now()}.png`)
+            )
+          }
         >
           Save as PNG
         </button>
@@ -339,7 +326,6 @@ function App() {
           }}
           onMouseUp={() => {
             if (+Date.now() - mouseDownTime > 100) {
-              console.log("t1");
               const x1 = Math.min(mouseDown[0], mouseCurr[0]);
               const x2 = Math.max(mouseDown[0], mouseCurr[0]);
               const y1 = Math.min(mouseDown[1], mouseCurr[1]);
@@ -367,7 +353,6 @@ function App() {
               setMouseDown();
               setMouseCurr();
             } else {
-              console.log("t2");
               setMouseDownTime();
               setMouseDown();
               setMouseCurr();
