@@ -2,13 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom";
 import App from "./App";
 
-import { QueryParamProvider } from "use-query-params";
-
 ReactDOM.render(
   <React.StrictMode>
-    <QueryParamProvider>
-      <App />
-    </QueryParamProvider>
+    <App />
   </React.StrictMode>,
   document.getElementById("root")
 );
