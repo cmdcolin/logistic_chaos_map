@@ -1,36 +1,36 @@
 /* eslint-disable no-unused-vars */
-import "./App.css";
-import { useEffect, useState } from "react";
-import drawCanvas from "./drawCanvas";
-import saveAs from "file-saver";
+import './App.css'
+import { useEffect, useState } from 'react'
+import drawCanvas from './drawCanvas'
+import saveAs from 'file-saver'
 
-const p = new URLSearchParams(window.location.search);
+const p = new URLSearchParams(window.location.search)
 
 function App() {
-  const [draw, setDraw] = useState();
-  const [mouseover, setMouseover] = useState();
+  const [draw, setDraw] = useState()
+  const [mouseover, setMouseover] = useState()
 
-  const [minX, setMinX] = useState(+(p.get("minX") ?? 0));
-  const [maxX, setMaxX] = useState(+(p.get("maxX") ?? 1));
-  const [minR, setMinR] = useState(+(p.get("minR") ?? 2));
-  const [maxR, setMaxR] = useState(+(p.get("maxR") ?? 4));
-  const [opacity, setOpacity] = useState(+(p.get("opacity") ?? 0.3));
-  const [resolution, setResolution] = useState(+(p.get("resolution") ?? 1000));
-  const [animate, setAnimate] = useState(JSON.parse(p.get("animate") ?? true));
+  const [minX, setMinX] = useState(+(p.get('minX') ?? 0))
+  const [maxX, setMaxX] = useState(+(p.get('maxX') ?? 1))
+  const [minR, setMinR] = useState(+(p.get('minR') ?? 2))
+  const [maxR, setMaxR] = useState(+(p.get('maxR') ?? 4))
+  const [opacity, setOpacity] = useState(+(p.get('opacity') ?? 0.3))
+  const [resolution, setResolution] = useState(+(p.get('resolution') ?? 1000))
+  const [animate, setAnimate] = useState(JSON.parse(p.get('animate') ?? true))
   const [drawWithWasm, setDrawWithWasm] = useState(
-    JSON.parse(p.get("drawWithWasm") ?? false)
-  );
+    JSON.parse(p.get('drawWithWasm') ?? false),
+  )
   const [vertical, setVertical] = useState(
-    JSON.parse(p.get("vertical") ?? false)
-  );
-  const [scaleFactor, setScaleFactor] = useState(+(p.get("scaleFactor") ?? 2));
+    JSON.parse(p.get('vertical') ?? false),
+  )
+  const [scaleFactor, setScaleFactor] = useState(+(p.get('scaleFactor') ?? 2))
 
-  const [mouseDown, setMouseDown] = useState();
-  const [mouseDownTime, setMouseDownTime] = useState();
-  const [mouseCurr, setMouseCurr] = useState();
-  const [loading, setLoading] = useState(true);
-  const [wasm, setWasm] = useState();
-  const [proportion, setProportion] = useState(0);
+  const [mouseDown, setMouseDown] = useState()
+  const [mouseDownTime, setMouseDownTime] = useState()
+  const [mouseCurr, setMouseCurr] = useState()
+  const [loading, setLoading] = useState(true)
+  const [wasm, setWasm] = useState()
+  const [proportion, setProportion] = useState(0)
 
   useEffect(() => {
     const p = {
@@ -44,13 +44,13 @@ function App() {
       animate,
       vertical,
       scaleFactor,
-    };
-    const params = new URLSearchParams(p);
+    }
+    const params = new URLSearchParams(p)
     window.history.pushState(
       p,
-      "",
-      window.location.pathname + "?" + params.toString()
-    );
+      '',
+      window.location.pathname + '?' + params.toString(),
+    )
   }, [
     minX,
     maxX,
@@ -62,23 +62,23 @@ function App() {
     opacity,
     drawWithWasm,
     resolution,
-  ]);
+  ])
 
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       try {
-        const wasm = await import("logistic-map-wasm");
-        setWasm(wasm);
+        const wasm = await import('logistic-map-wasm')
+        setWasm(wasm)
       } catch (e) {
-        console.error(e);
+        console.error(e)
       }
-    })();
-  }, []);
+    })()
+  }, [])
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const factor = +scaleFactor;
+    let cancelled = false
+    ;(async () => {
+      const factor = +scaleFactor
       if (
         wasm &&
         !Number.isNaN(factor) &&
@@ -86,22 +86,22 @@ function App() {
         !Number.isNaN(+resolution)
       ) {
         if (!draw) {
-          return;
+          return
         }
-        const ctx = draw.getContext("2d");
+        const ctx = draw.getContext('2d')
         if (!ctx) {
-          return;
+          return
         }
-        const { width, height } = draw.getBoundingClientRect();
-        draw.width = width * factor;
-        draw.height = height * factor;
+        const { width, height } = draw.getBoundingClientRect()
+        draw.width = width * factor
+        draw.height = height * factor
 
-        setLoading(true);
-        setProportion(0);
+        setLoading(true)
+        setProportion(0)
         setTimeout(async () => {
-          ctx.fillStyle = "white";
-          ctx.fillRect(0, 0, width * factor, height * factor);
-          ctx.fillStyle = `rgba(0,0,0,${+opacity})`;
+          ctx.fillStyle = 'white'
+          ctx.fillRect(0, 0, width * factor, height * factor)
+          ctx.fillStyle = `rgba(0,0,0,${+opacity})`
           if (drawWithWasm) {
             wasm.draw(
               ctx,
@@ -112,9 +112,10 @@ function App() {
               minX,
               maxX,
               +resolution,
-              vertical
-            );
+              vertical,
+            )
           } else {
+            let lastTime = +Date.now()
             for (const iter of drawCanvas(
               ctx,
               width * factor,
@@ -124,29 +125,32 @@ function App() {
               minX,
               maxX,
               +resolution,
-              vertical
+              vertical,
             )) {
               if (animate) {
-                setProportion(iter / (width * factor));
-                await new Promise((resolve) => setTimeout(resolve, 1));
+                setProportion(iter / (width * factor))
+                if (+Date.now() - lastTime > 10) {
+                  await new Promise(resolve => setTimeout(resolve, 1))
+                  lastTime = +Date.now()
+                }
               }
               if (cancelled) {
-                break;
+                break
               }
             }
           }
 
           //if !cancelled seems to be a race condition?
           if (!cancelled) {
-            setLoading(false);
-            setProportion(0);
+            setLoading(false)
+            setProportion(0)
           }
-        }, 100);
+        }, 100)
       }
-    })();
+    })()
     return () => {
-      cancelled = true;
-    };
+      cancelled = true
+    }
   }, [
     minR,
     maxR,
@@ -160,27 +164,27 @@ function App() {
     resolution,
     draw,
     wasm,
-  ]);
+  ])
 
   useEffect(() => {
     if (!mouseover) {
-      return;
+      return
     }
-    const ctx = mouseover.getContext("2d");
+    const ctx = mouseover.getContext('2d')
     if (!ctx) {
-      return;
+      return
     }
-    const { width, height } = mouseover.getBoundingClientRect();
-    mouseover.width = width;
-    mouseover.height = height;
+    const { width, height } = mouseover.getBoundingClientRect()
+    mouseover.width = width
+    mouseover.height = height
     if (mouseDown) {
-      ctx.clearRect(0, 0, width, height);
-      const [x1, y1] = mouseDown;
-      const [x2, y2] = mouseCurr;
-      ctx.fillStyle = "rgba(255,0,0,0.3)";
-      ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
+      ctx.clearRect(0, 0, width, height)
+      const [x1, y1] = mouseDown
+      const [x2, y2] = mouseCurr
+      ctx.fillStyle = 'rgba(255,0,0,0.3)'
+      ctx.fillRect(x1, y1, x2 - x1, y2 - y1)
     }
-  }, [mouseDown, mouseCurr, mouseover]);
+  }, [mouseDown, mouseCurr, mouseover])
 
   return (
     <div style={{ margin: 20 }}>
@@ -201,7 +205,7 @@ function App() {
       </p>
       <p>
         Note: my main goal when starting this project was to demonstrate using
-        wasm+react in a monorepo in a basic way. The source code is here{" "}
+        wasm+react in a monorepo in a basic way. The source code is here{' '}
         <a href="https://github.com/cmdcolin/logistic_chaos_map">Github</a>. The
         wasm drawing mode is not faster and doesn't provide the
         animation/progress bar but may be able to be improved.
@@ -213,7 +217,7 @@ function App() {
             id="opacity"
             type="text"
             value={opacity}
-            onChange={(event) => setOpacity(event.target.value)}
+            onChange={event => setOpacity(event.target.value)}
           />
         </div>
         <div className="block">
@@ -222,7 +226,7 @@ function App() {
             id="resolution"
             type="text"
             value={resolution}
-            onChange={(event) => setResolution(event.target.value)}
+            onChange={event => setResolution(event.target.value)}
           />
         </div>
         <div className="block">
@@ -231,7 +235,7 @@ function App() {
             id="scalefactor"
             type="text"
             value={scaleFactor}
-            onChange={(event) => setScaleFactor(event.target.value)}
+            onChange={event => setScaleFactor(event.target.value)}
           />
         </div>
 
@@ -241,7 +245,7 @@ function App() {
             id="wasm"
             type="checkbox"
             checked={drawWithWasm}
-            onChange={(event) => setDrawWithWasm(event.target.checked)}
+            onChange={event => setDrawWithWasm(event.target.checked)}
           />
         </div>
         <div className="block">
@@ -250,7 +254,7 @@ function App() {
             id="vertical"
             type="checkbox"
             checked={vertical}
-            onChange={(event) => setVertical(event.target.checked)}
+            onChange={event => setVertical(event.target.checked)}
           />
         </div>
         {!drawWithWasm ? (
@@ -261,22 +265,20 @@ function App() {
               disabled={drawWithWasm}
               type="checkbox"
               checked={animate}
-              onChange={(event) => setAnimate(event.target.checked)}
+              onChange={event => setAnimate(event.target.checked)}
             />
           </div>
         ) : null}
         <p>
           {loading
             ? `Loading...${
-                proportion ? (proportion * 100).toPrecision(3) + "%" : ""
+                proportion ? (proportion * 100).toPrecision(3) + '%' : ''
               }`
             : null}
         </p>
         <button
           onClick={() =>
-            draw.toBlob((blob) =>
-              saveAs(blob, `logistic_map_${+Date.now()}.png`)
-            )
+            draw.toBlob(blob => saveAs(blob, `logistic_map_${+Date.now()}.png`))
           }
         >
           Save as PNG
@@ -284,60 +286,64 @@ function App() {
 
         <button
           onClick={() => {
-            setMaxX(1);
-            setMinX(0);
-            setMinR(2);
-            setMaxR(4);
+            setMaxX(1)
+            setMinX(0)
+            setMinR(2)
+            setMaxR(4)
           }}
         >
           Reset
         </button>
       </div>
-      <div style={{ position: "relative" }}>
+      <div style={{ position: 'relative' }}>
         <canvas
-          ref={(ref) => setDraw(ref)}
+          ref={ref => setDraw(ref)}
           style={{
-            background: "white",
-            width: "100%",
-            height: "100vh",
-            position: "absolute",
+            background: 'white',
+            width: '100%',
+            height: '100vh',
+            position: 'absolute',
             left: 0,
             top: 0,
           }}
         />
         <canvas
           style={{
-            position: "absolute",
+            position: 'absolute',
             left: 0,
             top: 0,
-            width: "100%",
-            height: "100vh",
+            width: '100%',
+            height: '100vh',
             zIndex: 1000,
           }}
-          ref={(ref) => setMouseover(ref)}
-          onMouseDown={(event) => {
-            const { offsetX: x, offsetY: y } = event.nativeEvent;
-            setMouseDown([x, y]);
-            setMouseCurr([x, y]);
+          ref={ref => setMouseover(ref)}
+          onMouseDown={event => {
+            const { offsetX: x, offsetY: y } = event.nativeEvent
+            setMouseDown([x, y])
+            setMouseCurr([x, y])
           }}
-          onMouseMove={(event) => {
-            const { offsetX: x, offsetY: y } = event.nativeEvent;
+          onMouseMove={event => {
+            const { offsetX: x, offsetY: y } = event.nativeEvent
             if (mouseDown) {
-              setMouseCurr([x, y]);
+              setMouseCurr([x, y])
             }
           }}
           onMouseLeave={() => {
-            setMouseDown();
-            setMouseCurr();
-            setMouseDownTime(+Date.now());
+            setMouseDown()
+            setMouseCurr()
+            setMouseDownTime(+Date.now())
           }}
           onMouseUp={() => {
-            if (+Date.now() - mouseDownTime > 100) {
-              const x1 = Math.min(mouseDown[0], mouseCurr[0]);
-              const x2 = Math.max(mouseDown[0], mouseCurr[0]);
-              const y1 = Math.min(mouseDown[1], mouseCurr[1]);
-              const y2 = Math.max(mouseDown[1], mouseCurr[1]);
-              const { width, height } = mouseover.getBoundingClientRect();
+            if (
+              +Date.now() - mouseDownTime > 100 &&
+              Math.abs(mouseDown[0] - mouseCurr[0]) > 3 &&
+              Math.abs(mouseDown[1] - mouseCurr[1]) > 3
+            ) {
+              const x1 = Math.min(mouseDown[0], mouseCurr[0])
+              const x2 = Math.max(mouseDown[0], mouseCurr[0])
+              const y1 = Math.min(mouseDown[1], mouseCurr[1])
+              const y2 = Math.max(mouseDown[1], mouseCurr[1])
+              const { width, height } = mouseover.getBoundingClientRect()
 
               const n = !vertical
                 ? {
@@ -351,24 +357,24 @@ function App() {
                     maxR: ((maxR - minR) * y2) / height + minR,
                     minX: ((maxX - minX) * x1) / width + minX,
                     maxX: ((maxX - minX) * x2) / width + minX,
-                  };
+                  }
 
-              setMaxX(n.maxX);
-              setMinX(n.minX);
-              setMaxR(n.maxR);
-              setMinR(n.minR);
-              setMouseDown();
-              setMouseCurr();
+              setMaxX(n.maxX)
+              setMinX(n.minX)
+              setMaxR(n.maxR)
+              setMinR(n.minR)
+              setMouseDown()
+              setMouseCurr()
             } else {
-              setMouseDownTime();
-              setMouseDown();
-              setMouseCurr();
+              setMouseDownTime()
+              setMouseDown()
+              setMouseCurr()
             }
           }}
         />
       </div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
