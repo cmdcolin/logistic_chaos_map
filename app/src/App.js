@@ -199,6 +199,13 @@ function App() {
         the canvas size larger, allowing the code to render higher resolution
         (larger) images.
       </p>
+      <p>
+        Note: my main goal when starting this project was to demonstrate using
+        wasm+react in a monorepo in a basic way. The source code is here{" "}
+        <a href="https://github.com/cmdcolin/logistic_chaos_map">Github</a>. The
+        wasm drawing mode is not faster and doesn't provide the
+        animation/progress bar but may be able to be improved.
+      </p>
       <div className="controls">
         <div className="block">
           <label htmlFor="opacity">Opacity</label>
