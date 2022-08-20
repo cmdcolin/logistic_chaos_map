@@ -46,11 +46,10 @@ function App() {
       vertical,
       scaleFactor,
     }
-    const params = new URLSearchParams(p)
-    window.history.pushState(
+    window.history.replaceState(
       p,
       '',
-      window.location.pathname + '?' + params.toString(),
+      `${window.location.pathname}?${new URLSearchParams(p)}`,
     )
   }, [
     minX,
@@ -321,6 +320,7 @@ function App() {
             top: 0,
             width: '100%',
             height: '100vh',
+            cursor: 'crosshair',
             zIndex: 1000,
           }}
           ref={ref => setMouseover(ref)}
