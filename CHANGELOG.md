@@ -1,5 +1,6 @@
 ## v2.0.1
 
+- Typescriptify
 - Increase speed of the fractal rendering by only performing warmup once
 - Timeout 0 instead of 1ms
 - Allow configuring maxTries (M)

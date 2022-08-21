@@ -1,49 +1,52 @@
 import './App.css'
-import { useEffect, useState } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import drawCanvas from './drawCanvas'
 import saveAs from 'file-saver'
 import packageJSON from '../package.json'
 
 const p = new URLSearchParams(window.location.search)
 
+type Coord = [number, number]
 function App() {
-  const [draw, setDraw] = useState()
-  const [mouseover, setMouseover] = useState()
+  const ref = useRef<HTMLCanvasElement>(null)
+  const mouseoverRef = useRef<HTMLCanvasElement>(null)
 
   // url params
   const [minX, setMinX] = useState(+(p.get('minX') ?? 0))
   const [maxX, setMaxX] = useState(+(p.get('maxX') ?? 1))
   const [minR, setMinR] = useState(+(p.get('minR') ?? 2))
   const [maxR, setMaxR] = useState(+(p.get('maxR') ?? 4))
-  const [M, setM] = useState(+(p.get('M') ?? 50000))
-  const [opacity, setOpacity] = useState(+(p.get('opacity') ?? 0.3))
-  const [N, setN] = useState(+(p.get('N') ?? 1000))
-  const [animate, setAnimate] = useState(JSON.parse(p.get('animate') ?? true))
-  const [useWasm, setUseWasm] = useState(JSON.parse(p.get('useWasm') ?? false))
-  const [vert, setVert] = useState(JSON.parse(p.get('vert') ?? false))
-  const [scaleFactor, setScaleFactor] = useState(+(p.get('scaleFactor') ?? 2))
+  const [M, setM] = useState(p.get('M') ?? '50000')
+  const [N, setN] = useState(p.get('N') ?? '1000')
+  const [opacity, setOpacity] = useState(p.get('opacity') ?? '0.3')
+  const [animate, setAnimate] = useState(JSON.parse(p.get('animate') ?? 'true'))
+  const [useWasm, setUseWasm] = useState(JSON.parse(p.get('wasm') ?? 'false'))
+  const [vert, setVert] = useState(JSON.parse(p.get('vert') ?? 'false'))
+  const [scaleFactor, setScaleFactor] = useState(p.get('scaleFactor') ?? '2')
 
   // internal states
-  const [mouseDown, setMouseDown] = useState()
-  const [mouseCurr, setMouseCurr] = useState()
+  const [mouseDown, setMouseDown] = useState<Coord>()
+  const [mouseCurr, setMouseCurr] = useState<Coord>()
   const [loading, setLoading] = useState(true)
-  const [wasm, setWasm] = useState()
+  const [wasm, setWasm] = useState<typeof import('logistic-map-wasm')>()
   const [proportion, setProportion] = useState(0)
   const [time, setTime] = useState(0)
 
   useEffect(() => {
-    const p = {
-      useWasm,
-      minX,
-      maxX,
-      minR,
-      maxR,
-      opacity,
-      N,
-      animate,
-      vert,
-      scaleFactor,
-    }
+    const p = Object.fromEntries(
+      Object.entries({
+        wasm: useWasm,
+        minX,
+        maxX,
+        minR,
+        maxR,
+        opacity,
+        N,
+        animate,
+        vert,
+        scaleFactor,
+      }).map(([key, val]) => [key, `${val}`]),
+    )
     window.history.replaceState(
       p,
       '',
@@ -72,17 +75,18 @@ function App() {
         !Number.isNaN(+N) &&
         !Number.isNaN(+M)
       ) {
-        if (!draw) {
+        const elt = ref.current
+        if (!elt) {
           return
         }
-        const ctx = draw.getContext('2d')
+        const ctx = elt.getContext('2d')
         if (!ctx) {
           return
         }
-        const { width, height } = draw.getBoundingClientRect()
+        const { width, height } = elt.getBoundingClientRect()
         const factor = +scaleFactor
-        draw.width = width * factor
-        draw.height = height * factor
+        elt.width = width * factor
+        elt.height = height * factor
 
         setLoading(true)
         setProportion(0)
@@ -155,29 +159,29 @@ function App() {
     opacity,
     N,
     M,
-    draw,
     wasm,
   ])
 
   useEffect(() => {
-    if (!mouseover) {
+    const elt = mouseoverRef.current
+    if (!elt) {
       return
     }
-    const ctx = mouseover.getContext('2d')
+    const ctx = elt.getContext('2d')
     if (!ctx) {
       return
     }
-    const { width, height } = mouseover.getBoundingClientRect()
-    mouseover.width = width
-    mouseover.height = height
-    if (mouseDown) {
+    const { width, height } = elt.getBoundingClientRect()
+    elt.width = width
+    elt.height = height
+    if (mouseDown && mouseCurr) {
       ctx.clearRect(0, 0, width, height)
       const [x1, y1] = mouseDown
       const [x2, y2] = mouseCurr
       ctx.fillStyle = 'rgba(255,0,0,0.3)'
       ctx.fillRect(x1, y1, x2 - x1, y2 - y1)
     }
-  }, [mouseDown, mouseCurr, mouseover])
+  }, [mouseDown, mouseCurr])
 
   return (
     <div style={{ margin: 20 }}>
@@ -295,7 +299,13 @@ function App() {
             : null}
         </p>
         <button
-          onClick={() => draw.toBlob(b => saveAs(b, `frac_${+Date.now()}.png`))}
+          onClick={() =>
+            ref.current?.toBlob(b => {
+              if (b) {
+                saveAs(b, `frac_${+Date.now()}.png`)
+              }
+            })
+          }
         >
           Save as PNG
         </button>
@@ -314,7 +324,7 @@ function App() {
       </div>
       <div style={{ position: 'relative' }}>
         <canvas
-          ref={ref => setDraw(ref)}
+          ref={ref}
           style={{
             background: 'white',
             width: '100%',
@@ -334,7 +344,7 @@ function App() {
             cursor: 'crosshair',
             zIndex: 1000,
           }}
-          ref={ref => setMouseover(ref)}
+          ref={mouseoverRef}
           onMouseDown={event => {
             const { offsetX: x, offsetY: y } = event.nativeEvent
             setMouseDown([x, y])
@@ -347,11 +357,13 @@ function App() {
             }
           }}
           onMouseLeave={() => {
-            setMouseDown()
-            setMouseCurr()
+            setMouseDown(undefined)
+            setMouseCurr(undefined)
           }}
           onMouseUp={() => {
+            const elt = mouseoverRef.current
             if (
+              elt &&
               mouseDown &&
               mouseCurr &&
               Math.abs(mouseDown[0] - mouseCurr[0]) > 2 &&
@@ -361,7 +373,7 @@ function App() {
               const x2 = Math.max(mouseDown[0], mouseCurr[0])
               const y1 = Math.min(mouseDown[1], mouseCurr[1])
               const y2 = Math.max(mouseDown[1], mouseCurr[1])
-              const { width, height } = mouseover.getBoundingClientRect()
+              const { width, height } = elt.getBoundingClientRect()
 
               const n = !vert
                 ? {
@@ -381,11 +393,11 @@ function App() {
               setMinX(n.minX)
               setMaxR(n.maxR)
               setMinR(n.minR)
-              setMouseDown()
-              setMouseCurr()
+              setMouseDown(undefined)
+              setMouseCurr(undefined)
             } else {
-              setMouseDown()
-              setMouseCurr()
+              setMouseDown(undefined)
+              setMouseCurr(undefined)
             }
           }}
         />
