@@ -25,7 +25,6 @@ function App() {
 
   // internal states
   const [mouseDown, setMouseDown] = useState()
-  const [mouseDownTime, setMouseDownTime] = useState()
   const [mouseCurr, setMouseCurr] = useState()
   const [loading, setLoading] = useState(true)
   const [wasm, setWasm] = useState()
@@ -350,7 +349,6 @@ function App() {
           onMouseLeave={() => {
             setMouseDown()
             setMouseCurr()
-            setMouseDownTime(+Date.now())
           }}
           onMouseUp={() => {
             if (
@@ -386,7 +384,6 @@ function App() {
               setMouseDown()
               setMouseCurr()
             } else {
-              setMouseDownTime()
               setMouseDown()
               setMouseCurr()
             }
