@@ -1,5 +1,7 @@
 # logistic_chaos_map
 
+New! now runs as a twitter bot here https://twitter.com/chaosbot80 https://github.com/cmdcolin/twitter_fractal_bot
+
 Renders the [logistic map](https://en.wikipedia.org/wiki/Logistic_map) using a
 canvas and some basic JS. It also implements the same logistic map drawing code
 in WASM and js
