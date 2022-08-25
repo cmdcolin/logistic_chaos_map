@@ -16,9 +16,10 @@ function App() {
   const [maxX, setMaxX] = useState(+(p.get('maxX') ?? 1))
   const [minR, setMinR] = useState(+(p.get('minR') ?? 2))
   const [maxR, setMaxR] = useState(+(p.get('maxR') ?? 4))
+  const [bg, setBg] = useState(p.get('bg') ?? 'black')
+  const [fg, setFg] = useState(p.get('fg') ?? 'rgb(255,255,255,0.2)')
   const [M, setM] = useState(p.get('M') ?? '50000')
   const [N, setN] = useState(p.get('N') ?? '1000')
-  const [opacity, setOpacity] = useState(p.get('opacity') ?? '0.3')
   const [animate, setAnimate] = useState(JSON.parse(p.get('animate') ?? 'true'))
   const [useWasm, setUseWasm] = useState(JSON.parse(p.get('wasm') ?? 'false'))
   const [vert, setVert] = useState(JSON.parse(p.get('vert') ?? 'false'))
@@ -40,10 +41,12 @@ function App() {
         maxX,
         minR,
         maxR,
-        opacity,
         N,
+        M,
         animate,
         vert,
+        fg,
+        bg,
         scaleFactor,
       }).map(([key, val]) => [key, `${val}`]),
     )
@@ -52,7 +55,20 @@ function App() {
       '',
       `${window.location.pathname}?${new URLSearchParams(p)}`,
     )
-  }, [minX, maxX, minR, maxR, scaleFactor, animate, vert, opacity, useWasm, N])
+  }, [
+    minX,
+    maxX,
+    minR,
+    maxR,
+    scaleFactor,
+    animate,
+    vert,
+    useWasm,
+    N,
+    M,
+    fg,
+    bg,
+  ])
 
   useEffect(() => {
     ;(async () => {
@@ -71,7 +87,6 @@ function App() {
       if (
         wasm &&
         !Number.isNaN(+scaleFactor) &&
-        !Number.isNaN(+opacity) &&
         !Number.isNaN(+N) &&
         !Number.isNaN(+M)
       ) {
@@ -91,9 +106,9 @@ function App() {
         setLoading(true)
         setProportion(0)
         setTimeout(async () => {
-          ctx.fillStyle = 'white'
+          ctx.fillStyle = bg
           ctx.fillRect(0, 0, width * factor, height * factor)
-          ctx.fillStyle = `rgba(0,0,0,${+opacity})`
+          ctx.fillStyle = fg
           const startTime = +Date.now()
           if (useWasm) {
             wasm.draw(
@@ -156,9 +171,10 @@ function App() {
     vert,
     animate,
     useWasm,
-    opacity,
     N,
     M,
+    fg,
+    bg,
     wasm,
   ])
 
@@ -221,12 +237,21 @@ function App() {
       </p>
       <div className="controls">
         <div className="block">
-          <label htmlFor="opacity">Opacity</label>
+          <label htmlFor="opacity">Foreground color</label>
           <input
-            id="opacity"
+            id="fg"
             type="text"
-            value={opacity}
-            onChange={event => setOpacity(event.target.value)}
+            value={fg}
+            onChange={event => setFg(event.target.value)}
+          />
+        </div>
+        <div className="block">
+          <label htmlFor="opacity">Background color</label>
+          <input
+            id="bg"
+            type="text"
+            value={bg}
+            onChange={event => setBg(event.target.value)}
           />
         </div>
         <div className="block">
