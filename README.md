@@ -10,7 +10,7 @@ I think this repo is fairly unique for making a fairly minimal integration of
 wasm and create-react-app. It uses yarn workspaces with the wasm code in one
 workspace and the create-react-app in another workspace.
 
-See [NOTES.md](NOTES.md) for some fun details I discovered while creating this!
+See [NOTES.md](NOTES.md) for some fun details I discovered while creating this and blogpost showing the basic template of a Rust+WASM+React app https://cmdcolin.github.io/posts/2022-08-22-rustwasm
 
 ## Screenshot
 
