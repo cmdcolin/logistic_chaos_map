@@ -6,12 +6,6 @@ Renders the [logistic map](https://en.wikipedia.org/wiki/Logistic_map) using a
 canvas and some basic JS. It also implements the same logistic map drawing code
 in WASM and js
 
-I think this repo is fairly unique for making a fairly minimal integration of
-wasm and create-react-app. It uses yarn workspaces with the wasm code in one
-workspace and the create-react-app in another workspace.
-
-See [NOTES.md](NOTES.md) for some fun details I discovered while creating this and blogpost showing the basic template of a Rust+WASM+React app https://cmdcolin.github.io/posts/2022-08-22-rustwasm
-
 ## Screenshot
 
 ![](img/1.png)
@@ -34,10 +28,10 @@ cd logistic-map-wasm
 yarn serve
 ```
 
-Start a webpack-dev-server for the create-react-app
+Start dev server for the app
 
 ```
-## this is the create-react-app instance
+## this is the vite instance
 cd app
 yarn start
 ```
@@ -51,4 +45,6 @@ yarn deploy
 
 ## Notes
 
-See [NOTES.md](NOTES.md)
+Older versions used create-react-app but now uses vite (2024)
+
+See [NOTES.md](NOTES.md) for some fun details I discovered while creating this and blogpost showing the basic template of a Rust+WASM+React app https://cmdcolin.github.io/posts/2022-08-22-rustwasm

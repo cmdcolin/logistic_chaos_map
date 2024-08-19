@@ -1,0 +1,18 @@
+{
+  "files": {
+    "ignore": ["packages/core/ui/react-colorful.js"]
+  },
+  "linter": {
+    "rules": {
+      "complexity": {
+        "useArrowFunction": "off"
+      },
+      "a11y": {
+        "useButtonType": "off"
+      },
+      "suspicious": {
+        "noExplicitAny": "off"
+      }
+    }
+  }
+}
