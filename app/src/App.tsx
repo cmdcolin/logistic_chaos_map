@@ -1,8 +1,9 @@
 import { useRef, useEffect, useState } from 'react'
 import saveAs from 'file-saver'
-import drawCanvas from './drawCanvas'
 import { draw } from 'logistic-map-wasm'
+// locals
 import { settingsMap, useAppStore } from './store'
+import drawCanvas from './drawCanvas'
 
 import './App.css'
 
@@ -138,7 +139,7 @@ function App() {
   }, [mouseDown, mouseCurr])
 
   return (
-    <div style={{ margin: 20 }}>
+    <div className="m-5">
       <h1>f(x)=rx(x-1)</h1>
       <p>
         The function above is iterated for values of r between [2,4] and x
@@ -229,25 +230,10 @@ function App() {
         </button>
         {loading ? null : <p>Render time: {time / 1000}s</p>}
       </div>
-      <div style={{ position: 'relative' }}>
+      <div className="relative">
+        <canvas ref={ref} className="bg-white w-full h-full" />
         <canvas
-          ref={ref}
-          style={{
-            background: 'white',
-            width: '100%',
-            height: '100vh',
-          }}
-        />
-        <canvas
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            width: '100%',
-            height: '100vh',
-            cursor: 'crosshair',
-            zIndex: 1000,
-          }}
+          className="absolute left-0 top-0 w-full h-screen cursor-crosshair z-50"
           ref={mouseoverRef}
           onMouseDown={event => {
             const { offsetX: x, offsetY: y } = event.nativeEvent
