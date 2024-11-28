@@ -59,57 +59,60 @@ function App() {
 
       setLoading(true)
       setProportion(0)
-      setTimeout(async () => {
-        ctx.fillStyle = bg
-        ctx.fillRect(0, 0, width * factor, height * factor)
-        ctx.fillStyle = fg
-        const startTime = +Date.now()
-        if (wasm) {
-          draw(
-            ctx,
-            width * factor,
-            height * factor,
-            minR,
-            maxR,
-            minX,
-            maxX,
-            vert,
-            M,
-            N,
-          )
-        } else {
-          let lastTime = +Date.now()
-          for (const iter of drawCanvas(
-            ctx,
-            width * factor,
-            height * factor,
-            minR,
-            maxR,
-            minX,
-            maxX,
-            vert,
-            +M,
-            +N,
-          )) {
-            if (animate) {
-              setProportion(iter / (width * factor))
-              if (+Date.now() - lastTime > 10) {
-                await new Promise(resolve => setTimeout(resolve, 0))
-                lastTime = +Date.now()
+      setTimeout(() => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          ctx.fillStyle = bg
+          ctx.fillRect(0, 0, width * factor, height * factor)
+          ctx.fillStyle = fg
+          const startTime = performance.now()
+          if (wasm) {
+            draw(
+              ctx,
+              width * factor,
+              height * factor,
+              minR,
+              maxR,
+              minX,
+              maxX,
+              vert,
+              M,
+              N,
+            )
+          } else {
+            let lastTime = performance.now()
+            for (const iter of drawCanvas(
+              ctx,
+              width * factor,
+              height * factor,
+              minR,
+              maxR,
+              minX,
+              maxX,
+              vert,
+              +M,
+              +N,
+            )) {
+              if (animate) {
+                setProportion(iter / (width * factor))
+                if (performance.now() - lastTime > 10) {
+                  await new Promise(resolve => setTimeout(resolve, 0))
+                  lastTime = performance.now()
+                }
+              }
+              if (cancelled) {
+                break
               }
             }
-            if (cancelled) {
-              break
-            }
           }
-        }
-        setTime(+Date.now() - startTime)
+          setTime(performance.now() - startTime)
 
-        //if !cancelled seems to be a race condition?
-        if (!cancelled) {
-          setLoading(false)
-          setProportion(0)
-        }
+          //if !cancelled seems to be a race condition?
+          if (!cancelled) {
+            setLoading(false)
+            setProportion(0)
+          }
+        })()
       }, 100)
     }
     return () => {
@@ -210,7 +213,7 @@ function App() {
           onClick={() =>
             ref.current?.toBlob(b => {
               if (b) {
-                saveAs(b, `frac_${+Date.now()}.png`)
+                saveAs(b, `frac_${performance.now()}.png`)
               }
             })
           }
