@@ -1,7 +1,6 @@
 import { useRef, useEffect, useState } from 'react'
 import saveAs from 'file-saver'
 import { draw } from 'logistic-map-wasm'
-// locals
 import { settingsMap, useAppStore } from './store'
 import drawCanvas from './drawCanvas'
 
@@ -143,7 +142,7 @@ function App() {
 
   return (
     <div className="m-5">
-      <h1>f(x)=rx(x-1)</h1>
+      <h1 className="text-3xl">f(x)=rx(x-1)</h1>
       <p>
         The function above is iterated for values of r between [2,4] and x
         between [0,1] and points. Click and drag a region to zoom in. The
