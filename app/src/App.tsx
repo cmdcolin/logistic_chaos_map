@@ -42,7 +42,7 @@ function App() {
 
   useEffect(() => {
     let cancelled = false
-    if (!Number.isNaN(+scaleFactor) && !Number.isNaN(+N) && !Number.isNaN(+M)) {
+    if (!Number.isNaN(scaleFactor) && !Number.isNaN(N) && !Number.isNaN(M)) {
       const elt = ref.current
       if (!elt) {
         return
@@ -52,7 +52,7 @@ function App() {
         return
       }
       const { width, height } = elt.getBoundingClientRect()
-      const factor = +scaleFactor
+      const factor = scaleFactor
       elt.width = width * factor
       elt.height = height * factor
 
@@ -89,8 +89,8 @@ function App() {
               minX,
               maxX,
               vert,
-              +M,
-              +N,
+              M,
+              N,
             )) {
               if (animate) {
                 setProportion(iter / (width * factor))
