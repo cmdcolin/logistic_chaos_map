@@ -8,9 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist",
-    "postdeploy": "git push"
+    "predep": "npm run build",
+    "dep": "gh-pages -d dist",
+    "postdep": "git push"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.0",
